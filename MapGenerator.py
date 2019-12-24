@@ -1,4 +1,5 @@
 import pygame as pg
+import os
 
 pg.init()
 
@@ -11,7 +12,18 @@ class Board:
         self.left = 10
         self.top = 10
         self.cell_size = 30
-        self.cl = pg.Color('grey')
+        self.image_dicf = {'1': load_image('grass.jpf')}
+
+    def load_image(self, name, colorkey=None):
+        fullname = os.path.join('generatorFiles', name)
+        image = pg.image.load(fullname).convert()
+        if colorkey is not None:
+            if colorkey == -1:
+                colorkey = image.get_at((0, 0))
+            image.set_colorkey(colorkey)
+        else:
+            image = image.convert_alpha()
+        return image
 
     def set_view(self, left, top, cell_size):
         self.left = left
@@ -38,7 +50,7 @@ class Board:
 size = 580, 580
 screen = pg.display.set_mode(size)
 pg.display.flip()
-board = Board(64, 64)
+board = Board(16, 16)
 running = True
 
 while running:
