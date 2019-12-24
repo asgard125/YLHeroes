@@ -4,26 +4,27 @@ import os
 pg.init()
 
 
+def load_image(name, colorkey=None):
+    fullname = os.path.join('generatorFiles', name)
+    image = pg.image.load(fullname).convert()
+    if colorkey is not None:
+        if colorkey == -1:
+            colorkey = image.get_at((0, 0))
+        image.set_colorkey(colorkey)
+    else:
+        image = image.convert_alpha()
+    return image
+
+
 class Board:
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.board = [[1] * width for _ in range(height)]
+        self.board = [['1'] * width for _ in range(height)]
         self.left = 10
         self.top = 10
         self.cell_size = 30
-        self.image_dicf = {'1': load_image('grass.jpf')}
-
-    def load_image(self, name, colorkey=None):
-        fullname = os.path.join('generatorFiles', name)
-        image = pg.image.load(fullname).convert()
-        if colorkey is not None:
-            if colorkey == -1:
-                colorkey = image.get_at((0, 0))
-            image.set_colorkey(colorkey)
-        else:
-            image = image.convert_alpha()
-        return image
+        self.image_dict = {'1': load_image('grass.jpg')}
 
     def set_view(self, left, top, cell_size):
         self.left = left
@@ -33,8 +34,11 @@ class Board:
     def render(self, scr):
         for i in range(self.height):
             for j in range(self.width):
-                pg.draw.rect(scr, self.cl, (self.left + j * self.cell_size,
-                                            self.top + i * self.cell_size, self.cell_size, self.cell_size), 1)
+                pg.draw.rect(scr, (160, 160, 160), (self.left + j * self.cell_size,
+                                                      self.top + i * self.cell_size, self.cell_size, self.cell_size), 1)
+                img = self.image_dict[self.board[i][j]]
+                img = pg.transform.scale(img, (28, 28))
+                screen.blit(img, (self.left + j * self.cell_size + 1, self.top + i * self.cell_size + 1))
 
     def get_click(self, mouse_pos):
         cell = self.get_cell(mouse_pos)
