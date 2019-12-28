@@ -10,7 +10,7 @@ class Board:
         self.height = height
         self.board = [['*'] * width for _ in range(height)]
         self.txt_map = [['*'] * width for _ in range(height)]
-        self.left = 10
+        self.left = 400
         self.top = 10
         self.cell_size = 30
 
@@ -22,17 +22,24 @@ class Board:
         self.cell_size = cell_size
 
     def render(self, scr):
+        # отрисовка пустого поля-сетки
         for i in range(self.height):
             for j in range(self.width):
                 pg.draw.rect(scr, (160, 160, 160), (self.left + j * self.cell_size,
                                                     self.top + i * self.cell_size, self.cell_size, self.cell_size), 1)
-                img = load_image('grass.jpg')
+                img = load_image('road.jpg')
                 img = pg.transform.scale(img, (28, 28))
                 screen.blit(img, (self.left + j * self.cell_size + 1, self.top + i * self.cell_size + 1))
+        # отрисовка спрайтов
+
+
 
     def get_click(self, mouse_pos):
         cell = self.get_cell(mouse_pos)
-        castle
+        print(cell)
+        if cell is not None:
+            self.board[cell[0]][cell[1]] = Castle(xy=(cell[1] * 30 + self.left, cell[0] * 30 + self.top))
+            object_sprites.add(self.board[cell[0]][cell[1]])
 
     def get_cell(self, pos):
         x, y = pos
@@ -43,10 +50,11 @@ class Board:
             return col, row
 
 
-size = 700, 700
+size = 1280, 720
 screen = pg.display.set_mode(size)
-pg.display.flip()
 board = Board(16, 16)
+board.render(screen)
+pg.display.flip()
 running = True
 object_sprites = pg.sprite.Group()
 
@@ -55,9 +63,7 @@ while running:
         if event.type == pg.QUIT:
             running = False
         if event.type == pg.MOUSEBUTTONDOWN:
-            print(board.get_click(event.pos))
-    screen.fill((0, 0, 0))
-    board.render(screen)
+            board.get_click(event.pos)
     object_sprites.draw(screen)
     pg.display.flip()
 
