@@ -29,18 +29,18 @@ MINT = (127, 255, 212)
 
 
 class Cell(pygame.sprite.Sprite):
-    def __init__(self, penalty, able_to_go, sprite, xy=None, wh=None):
+    def __init__(self, penalty, able_to_go, sprite, xy=None, pos=None):
         super().__init__()
         self.penalty = penalty
         self.able_to_go = able_to_go
         self.sprite = sprite
         self.xy = xy
-        self.wh = wh
+        self.pos = pos
 
 
 class Snow(Cell):  # 0
     def __init__(self, xy):
-        super().__init__(4, True, WHITE, wh=(1, 1), xy=None)
+        super().__init__(4, True, WHITE, xy=None)
         self.damage = 0.1
 
 
@@ -70,11 +70,12 @@ class Forest(Cell):  # 5
 
 
 class Castle(Cell):
-    def __init__(self, xy=None):
-        super().__init__(0, True, GAY, wh=(2, 2))
+    def __init__(self, xy=None, pos=None):
+        super().__init__(0, True, GAY)
         self.image = load_image("castle.png", colorkey=-1)
-        self.image = pygame.transform.scale(self.image, (self.wh[0] * 30, self.wh[1] * 30))
+        self.image = pygame.transform.scale(self.image, (30, 30))
         self.rect = self.image.get_rect()
         self.rect.x = xy[0]
         self.rect.y = xy[1]
+        self.pos = pos
 
