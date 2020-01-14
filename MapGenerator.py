@@ -1,5 +1,8 @@
 import pygame as pg
 import os
+from tkinter import *
+from tkinter import messagebox as mb
+from PIL import Image, ImageDraw
 
 pg.init()
 
@@ -16,7 +19,7 @@ def load_image(name, colorkey=None):  # загрузка изображения
     return image
 
 
-class Button:
+class PgButton:
     def __init__(self, xy, wh, image):
         self.xy = xy
         self.wh = wh
@@ -30,13 +33,14 @@ class Button:
 
 
 class GameObject(pg.sprite.Sprite):  # класс спрайтов
-    def __init__(self, cords, pos, img):
+    def __init__(self, cords, pos, img, txt_char):
         super().__init__()
         self.pos = pos
-        self.image = pg.transform.scale(img, (30, 30))
+        self.image = pg.transform.scale(load_image(img), (30, 30))
         self.rect = self.image.get_rect()
         self.rect.x = cords[0]
         self.rect.y = cords[1]
+        self.txt_char = txt_char
 
 
 class Board:
@@ -46,7 +50,7 @@ class Board:
         self.background_board = [[GameObject((
             i * 30 + (1280 - 30 * 16) // 2, j * 30 + 10),
             (j, i),
-            load_image('road.jpg')) for i in range(width)] for j in range(height)]
+            'grass.jpg', '0') for i in range(width)] for j in range(height)]
         self.txt_primary_map = [['*'] * width for _ in range(height)]
         self.txt_background_map = [['0'] * width for _ in range(height)]
         # координаты и размер доски в данный момент
@@ -63,14 +67,14 @@ class Board:
         self.background_objects = pg.sprite.Group()
         self.all_objects_cursor = 0
         # формат: [Название объекта, изображение, тип, обозначение для текстового файла]
-        self.all_objects = [('Castle', load_image('castle.png', -1), 'primary', '2'),
-                            ('Road', load_image('road.jpg'), 'background', '0'),
-                            ('Grass', load_image('grass.jpg'), 'background', '1')]
+        self.all_objects = {0: ('Castle', 'castle.png', 'primary', '2'),
+                            1: ('Road', 'road.jpg', 'background', '1'),
+                            2: ('Grass', 'grass.jpg', 'background', '0')}
         # кнопки
-        self.buttonup = Button((self.LEFT + 16 * self.CELL_SIZE + 70, 170), (60, 20), load_image('arrowbtnup.jpg'))
-        self.buttondown = Button((self.LEFT + 16 * self.CELL_SIZE + 70, 270), (60, 20), load_image('arrowbtndown.jpg'))
-        self.savebutton = Button((self.LEFT + 16 * self.CELL_SIZE + 60, 500), (80, 40), load_image('savebutton.jpg'))
-        # self.infobutton = Button((x, y), (30, 30), load_image('infobutton.jpg'))
+        self.buttonup = PgButton((self.LEFT + 16 * self.CELL_SIZE + 70, 170), (60, 20), load_image('arrowbtnup.jpg'))
+        self.buttondown = PgButton((self.LEFT + 16 * self.CELL_SIZE + 70, 270), (60, 20),
+                                   load_image('arrowbtndown.jpg'))
+        self.savebutton = PgButton((self.LEFT + 16 * self.CELL_SIZE + 60, 500), (80, 40), load_image('savebutton.jpg'))
 
     def render_interface(self, surface):
         # загрузка фонового изображения
@@ -78,7 +82,7 @@ class Board:
         # отрисовка кнопок и элементов для взаимодействия
         pg.draw.rect(surface, (0, 0, 0), (self.LEFT + 16 * self.CELL_SIZE + 70, 200,
                                           60, 60))  # черный прямоугольник-рамка для объекта
-        img = pg.transform.scale(self.all_objects[self.all_objects_cursor][1], (60, 60))  # объект из списка
+        img = pg.transform.scale(load_image(self.all_objects[self.all_objects_cursor][1]), (60, 60))  # объект из списка
         surface.blit(img, (self.LEFT + 16 * self.CELL_SIZE + 70, 200))
 
         self.buttonup.draw_button(surface)
@@ -114,7 +118,7 @@ class Board:
                 self.primary_board[cell[0]][cell[1]] = GameObject(
                     ((cell[1]) * 30 + self.LEFT, (cell[0]) * 30 + self.TOP),
                     (cell[0], cell[1]),
-                    self.all_objects[self.all_objects_cursor][1])
+                    self.all_objects[self.all_objects_cursor][1], self.all_objects[self.all_objects_cursor][-1])
                 for i in self.primary_objects:
                     if i.pos[1] == cell[1] and i.pos[0] == cell[0]:
                         i.kill()
@@ -124,7 +128,7 @@ class Board:
                 self.background_board[cell[0]][cell[1]] = GameObject((
                     cell[1] * 30 + self.LEFT, cell[0] * 30 + self.TOP),
                     (cell[0], cell[1]),
-                    self.all_objects[self.all_objects_cursor][1])
+                    self.all_objects[self.all_objects_cursor][1], self.all_objects[self.all_objects_cursor][-1])
                 for i in self.background_objects:
                     if i.pos[1] == cell[1] and i.pos[0] == cell[0]:
                         i.kill()
@@ -152,6 +156,35 @@ class Board:
             self.all_objects_cursor = max(0, self.all_objects_cursor - 1)
         elif self.buttondown.check_hit(pos):
             self.all_objects_cursor = min(len(self.all_objects) - 1, self.all_objects_cursor + 1)
+        elif self.savebutton.check_hit(pos):
+            self.save_map()
+
+    def save_map(self):
+        self.name = None
+        self.root = Tk()
+        self.entry = Entry()
+        self.entry.pack(pady=10)
+        Button(text='Ввести', command=self.check).pack()
+        self.label = Label(height=1)
+        self.label.pack()
+        self.root.mainloop()
+        # объекты переднего плана
+        f = open(f"maps/{self.name}_primary.txt", 'w', encoding='utf8')
+        f.write('\n'.join([''.join([i.txt_char if i != '*' else '*' for i in j]) for j in self.primary_board]))
+        f.close()
+        # объекты заднего плана
+        f = open(f"maps/{self.name}_background.txt", 'w', encoding='utf8')
+        f.write('\n'.join([''.join([i.txt_char for i in j]) for j in self.background_board]))
+        f.close()
+        # картинка карты
+        new_image = Image.new("RGB", (32 * 30, 32 * 30), (0, 0, 0))
+
+    def check(self):
+        answer = mb.askyesno(title="Вопрос", message="Перенести данные?")
+        if answer == True:
+            self.name = self.entry.get()
+            self.entry.delete(0, END)
+            self.root.destroy()
 
 
 def run():
@@ -187,7 +220,7 @@ def run():
         board.background_objects.draw(screen)
         board.primary_objects.draw(screen)
         pg.display.flip()
-        clock.tick(5)
+        clock.tick(15)
 
     pg.quit()
 
