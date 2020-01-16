@@ -14,6 +14,8 @@ class Unit:
         self.price = price
         self.image = image
 
+    def copy(self):
+        return self
 
 # Армия нежити
 class Skeleton(Unit):
@@ -28,18 +30,20 @@ class Zombie(Unit):
 
 class Leach(Unit):
     def __init__(self, count):
-        super().__init__("Личи",count, 160, load_image('data\\UNITS_SPRYTE\\Leach.png'))
+        super().__init__("Личи", count, 160, load_image('data\\UNITS_SPRYTE\\Leach.png'))
 
 
-class HorsemanOfTheApocalypse(Unit):
-    def __init__(self, count):
-        super().__init__(count, 250)
+# class HorsemanOfTheApocalypse(Unit):
+#     def __init__(self, count):
+#         super().__init__(count, 250)
+#
+#
+# class NecroMancer(Unit):
+#     def __init__(self, count):
+#         super().__init__(count, 300)
 
 
-class NecroMancer(Unit):
-    def __init__(self, count):
-        super().__init__(count, 300)
-
+# Армия людей
 
 # Армия людей
 class SpearMan(Unit):
