@@ -4,8 +4,6 @@ from tkinter import *
 from tkinter import messagebox as mb
 from PIL import Image, ImageDraw
 
-pg.init()
-
 
 def load_image(name, colorkey=None):  # загрузка изображения
     fullname = os.path.join('generatorFiles', name)
@@ -229,6 +227,7 @@ class Board:
 
 
 def run():
+    pg.init()
     size = 1280, 720
     screen = pg.display.set_mode(size)
     clock = pg.time.Clock()
@@ -264,6 +263,3 @@ def run():
         clock.tick(15)
 
     pg.quit()
-
-
-run()
