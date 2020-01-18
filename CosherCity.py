@@ -289,12 +289,11 @@ class CosherCity(City):
 
 
 def run_cosher_city(name, x, y, garrisonn, entered_hero, t=0, w=3, s=2, z=2, l=2, h=0, n=0):
-
+    pygame.init()
     city = CosherCity(name=name, x=x, y=y, tavern=t, level=l, wall=w, skeleton=s,
                       zombie=z, leach=l, horseman_of_the_apocalypse=h,
                       necromancer=n, garrison=garrisonn, entered_hero =entered_hero)
     run = 1
-
     while run:
 
 

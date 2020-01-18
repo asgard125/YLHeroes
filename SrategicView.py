@@ -1,21 +1,11 @@
 import pygame
 from UnitTypes import *
+from CosherCity import *
+from Heroes import *
 import os
 
 
-pygame.init()
 
-# Разрешение экрана
-width = 1200
-height = 1000
-screen = pygame.display.set_mode((width, height))
-
-# Количество кадров в секунду
-clock = pygame.time.Clock()
-fps = 30
-
-# Ширина одной клеточки
-cell_width = 60
 
 
 # загрузка изображений
@@ -104,82 +94,97 @@ def move(obj, x, x1, y, y1):
     move_p = False
 
 
+def run_map():
 
-# Группы спрайтов
-all_sprite = pygame.sprite.Group()
-bg_sprite = pygame.sprite.Group()
-heroes_sprite = pygame.sprite.Group()
-interactive_sprite = pygame.sprite.Group()
+    pygame.init()
 
-# Поля
-field = ['0' * 32] * 32   # Поле, по которым двигаются Герои
-interactive = [City('debug_city.png', 'blue', 'cosher', 8, 9)]  # Массив, внутри которого хранятся интерактивные объекты
-heroes = [Hero('debug_hero.png', 'blue', 3, 2), Hero('debug_hero.png', 'blue', 5, 9)]   # Массив, внутри которого хранятся герои
+    # Разрешение экрана
+    width = 1200
+    height = 1000
+    screen = pygame.display.set_mode((width, height))
 
-# Что выбрано сейчас
-active = heroes[0]
+    # Количество кадров в секунду
+    clock = pygame.time.Clock()
+    fps = 30
 
+    # Ширина одной клеточки
+    cell_width = 60
 
+    # Группы спрайтов
+    all_sprite = pygame.sprite.Group()
+    bg_sprite = pygame.sprite.Group()
+    heroes_sprite = pygame.sprite.Group()
+    interactive_sprite = pygame.sprite.Group()
 
-# Переменные
-back_ground = BackGround()
+    # Поля
+    field = ['0' * 32] * 32   # Поле, по которым двигаются Герои
+    interactive = [City('debug_city.png', 'blue', 'cosher', 8, 9)]  # Массив, внутри которого хранятся интерактивные объекты
+    heroes = [Hero('debug_hero.png', 'blue', 3, 2), Hero('debug_hero.png', 'blue', 5, 9)]   # Массив, внутри которого хранятся герои
 
-
-# Отступы при движении камеры
-
-# Вкл/выкл переменная
-running = True
-
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.KEYDOWN:
-
-            # Движение камеры
-            if event.key == pygame.K_UP:
-                if back_ground.rect.y <= 500:
-                    for sprite in all_sprite:
-                        sprite.rect.y += cell_width
-            elif event.key == pygame.K_LEFT:
-                if back_ground.rect.x <= 500:
-                    for sprite in all_sprite:
-                        sprite.rect.x += cell_width
-            elif event.key == pygame.K_DOWN:
-                if not back_ground.rect.y <= -1420:
-                    for sprite in all_sprite:
-                        sprite.rect.y -= cell_width
-            elif event.key == pygame.K_RIGHT:
-                if not back_ground.rect.x <= -1420:
-                    for sprite in all_sprite:
-                        sprite.rect.x -= cell_width
-
-            # Движение героя
-            if event.key == pygame.K_w:
-                move(active, 0, 0, -1, -cell_width)
-            elif event.key == pygame.K_a:
-                move(active, -1, -cell_width, 0, 0)
-            elif event.key == pygame.K_s:
-                move(active, 0, 0, 1, cell_width)
-            elif event.key == pygame.K_d:
-                move(active, 1, cell_width, 0, 0)
-
-        # Нажатие на поле
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:
-                coords = get_coord(event.pos[0], event.pos[1])
-                for hero in heroes:
-                    if hero.x == coords[0] and hero.y == coords[1]:
-                        active = hero
+    # Что выбрано сейчас
+    active = heroes[0]
 
 
 
-    screen.fill((0, 0, 0))
-    all_sprite.draw(screen)
-    heroes_sprite.draw(screen)
-    pygame.display.flip()
-
-    clock.tick(fps)
+    # Переменные
+    back_ground = BackGround()
 
 
-pygame.quit()
+    # Отступы при движении камеры
+
+    # Вкл/выкл переменная
+    running = True
+
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.KEYDOWN:
+
+                # Движение камеры
+                if event.key == pygame.K_UP:
+                    if back_ground.rect.y <= 500:
+                        for sprite in all_sprite:
+                            sprite.rect.y += cell_width
+                elif event.key == pygame.K_LEFT:
+                    if back_ground.rect.x <= 500:
+                        for sprite in all_sprite:
+                            sprite.rect.x += cell_width
+                elif event.key == pygame.K_DOWN:
+                    if not back_ground.rect.y <= -1420:
+                        for sprite in all_sprite:
+                            sprite.rect.y -= cell_width
+                elif event.key == pygame.K_RIGHT:
+                    if not back_ground.rect.x <= -1420:
+                        for sprite in all_sprite:
+                            sprite.rect.x -= cell_width
+
+                # Движение героя
+                if event.key == pygame.K_w:
+                    move(active, 0, 0, -1, -cell_width)
+                elif event.key == pygame.K_a:
+                    move(active, -1, -cell_width, 0, 0)
+                elif event.key == pygame.K_s:
+                    move(active, 0, 0, 1, cell_width)
+                elif event.key == pygame.K_d:
+                    move(active, 1, cell_width, 0, 0)
+
+            # Нажатие на поле
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    coords = get_coord(event.pos[0], event.pos[1])
+                    for hero in heroes:
+                        if hero.x == coords[0] and hero.y == coords[1]:
+                            active = hero
+
+
+
+        screen.fill((0, 0, 0))
+        all_sprite.draw(screen)
+        heroes_sprite.draw(screen)
+        pygame.display.flip()
+
+        clock.tick(fps)
+
+
+    pygame.quit()
