@@ -72,13 +72,17 @@ class Board:
             ('Grass', 'grass.png', 'background', '0'),
             ('Forest', 'forest.png', 'background', '3'),
             ('Necropolis', 'necropolis.png', 'primary', '2'),
-            ('Gold', 'gold.png', 'primary', '1')
+            ('Gold', 'gold.png', 'primary', '1'),
+            ('Player 1', 'player1.png', 'spawnpoint', 'q'),
+            ('Player 2', 'player2.png', 'spawnpoint', 'w'),
         ]
         # кнопки
         self.buttonup = PgButton((self.LEFT + 16 * self.CELL_SIZE + 70, 160), (60, 20), load_image('arrowbtnup.jpg'))
         self.buttondown = PgButton((self.LEFT + 16 * self.CELL_SIZE + 70, 280), (60, 20),
                                    load_image('arrowbtndown.jpg'))
         self.savebutton = PgButton((self.LEFT + 16 * self.CELL_SIZE + 60, 500), (80, 40), load_image('savebutton.jpg'))
+        self.minimap = None
+        self.pilimages = {}
 
     def render_interface(self, surface):
         f = pg.font.Font(None, 18)
@@ -98,14 +102,20 @@ class Board:
         info1 = f.render('ПКМ - удалить primary объект', 1, (0, 0, 0))
         info2 = f.render('ЛКМ - разместить объект', 1, (0, 0, 0))
         info3 = f.render('SAVE - сохранить карту', 1, (0, 0, 0))
+        if any('q' in i for i in self.txt_primary_map) and any('w' in j for j in self.txt_primary_map):
+            info4 = f.render('Можно сохранить карту', 1, (0, 0, 0))
+        else:
+            info4 = f.render('Не установлены спавнпоинты', 1, (0, 0, 0))
         surface.blit(info, (self.LEFT - 205, 50))
         surface.blit(info1, (self.LEFT - 205, 70))
         surface.blit(info2, (self.LEFT - 205, 90))
         surface.blit(info3, (self.LEFT - 205, 110))
+        surface.blit(info4, (self.LEFT + 16 * self.CELL_SIZE + 11, 550))
         # отрисовка кнопок
         self.buttonup.draw_button(surface)
         self.buttondown.draw_button(surface)
         self.savebutton.draw_button(surface)
+        self.draw_minimap(surface)
 
     def move_sprites(self):
         for i in self.primary_objects:
@@ -137,21 +147,28 @@ class Board:
                     ((cell[1]) * 30 + self.LEFT, (cell[0]) * 30 + self.TOP),
                     (cell[0], cell[1]),
                     self.all_objects[self.all_objects_cursor][1], self.all_objects[self.all_objects_cursor][-1])
-                for i in self.primary_objects:
-                    if i.pos[1] == cell[1] and i.pos[0] == cell[0]:
-                        i.kill()
-                self.primary_objects.add(self.primary_board[cell[0]][cell[1]])
                 self.txt_primary_map[cell[0]][cell[1]] = self.all_objects[self.all_objects_cursor][-1]
-            else:
+            elif self.all_objects[self.all_objects_cursor][2] == 'background':
                 self.background_board[cell[0]][cell[1]] = GameObject((
                     cell[1] * 30 + self.LEFT, cell[0] * 30 + self.TOP),
                     (cell[0], cell[1]),
                     self.all_objects[self.all_objects_cursor][1], self.all_objects[self.all_objects_cursor][-1])
-                for i in self.background_objects:
-                    if i.pos[1] == cell[1] and i.pos[0] == cell[0]:
-                        i.kill()
-                self.background_objects.add(self.background_board[cell[0]][cell[1]])
                 self.txt_background_map[cell[0]][cell[1]] = self.all_objects[self.all_objects_cursor][-1]
+            elif self.all_objects[self.all_objects_cursor][2] == 'spawnpoint':
+                if (self.background_board[cell[0]][cell[1]].txt_char in ['0', '1'] and
+                        self.primary_board[cell[0]][cell[1]] == '*'):
+                    for i in range(self.height):
+                        for j in range(self.width):
+                            if self.primary_board[i][j] != '*':
+                                if self.primary_board[i][j].txt_char == self.all_objects[self.all_objects_cursor][-1]:
+                                    self.primary_board[i][j] = '*'
+                                    self.txt_primary_map[i][j] = '*'
+                    self.primary_board[cell[0]][cell[1]] = GameObject(
+                        ((cell[1]) * 30 + self.LEFT, (cell[0]) * 30 + self.TOP),
+                        (cell[0], cell[1]),
+                        self.all_objects[self.all_objects_cursor][1], self.all_objects[self.all_objects_cursor][-1])
+                    self.txt_primary_map[cell[0]][cell[1]] = self.all_objects[self.all_objects_cursor][-1]
+        self.minimap_changed()
 
     def del_object(self, pos):
         cell = self.get_cell(pos)
@@ -160,6 +177,7 @@ class Board:
                 i.kill()
                 self.primary_board[cell[0]][cell[1]] = '*'
                 self.txt_primary_map[cell[0]][cell[1]] = '*'
+        self.minimap_changed()
 
     def get_cell(self, pos):
         x, y = pos
@@ -179,14 +197,14 @@ class Board:
 
     def save_map(self):
         self.name = None
-        self.root = Tk()
-        self.entry = Entry()
-        self.entry.pack(pady=10)
-        Button(text='Ввести', command=self.check).pack()
-        self.label = Label(height=1)
-        self.label.pack()
-        self.root.mainloop()
-        # объекты переднего плана
+        if any('q' in i for i in self.txt_primary_map) and any('w' in i for i in self.txt_primary_map):
+            self.root = Tk()
+            self.entry = Entry()
+            self.entry.pack(pady=10)
+            Button(text='Ввести', command=self.check).pack()
+            self.label = Label(height=1)
+            self.label.pack()
+            self.root.mainloop()
         if self.name is not None:
             # общий список карт
             f = open(f"maps/maplist.txt", 'r', encoding='utf8')
@@ -199,11 +217,11 @@ class Board:
             f.close()
             # объекты переднего плана
             f = open(f"maps/{self.name}_primary.txt", 'w', encoding='utf8')
-            f.write('\n'.join([''.join([i.txt_char if i != '*' else '*' for i in j]) for j in self.primary_board]))
+            f.write('\n'.join([''.join([i for i in j]) for j in self.txt_primary_map]))
             f.close()
             # объекты заднего плана
             f = open(f"maps/{self.name}_background.txt", 'w', encoding='utf8')
-            f.write('\n'.join([''.join([i.txt_char for i in j]) for j in self.background_board]))
+            f.write('\n'.join([''.join([i for i in j]) for j in self.txt_background_map]))
             f.close()
             # картинка карты
             fon = Image.new("RGBA", (self.height * 60, self.width * 60), (0, 0, 0))
@@ -212,10 +230,6 @@ class Board:
                     bpic = Image.open(f'generatorFiles/{self.background_board[i][j].img_name}').convert("RGBA")
                     bpic = bpic.resize((60, 60))
                     fon.paste(bpic, (j * 60, i * 60), bpic)
-                    if self.primary_board[i][j] != '*':
-                        ppic = Image.open(f'generatorFiles/{self.primary_board[i][j].img_name}')
-                        ppic = ppic.resize((60, 60))
-                        fon.paste(ppic, (j * 60, i * 60), ppic)
             fon.save(f"maps/{self.name}_image.png")
 
     def check(self):
@@ -225,6 +239,25 @@ class Board:
             self.entry.delete(0, END)
             self.root.destroy()
 
+    def draw_minimap(self, surf):
+        surf.blit(self.minimap, (self.LEFT + 16 * self.CELL_SIZE + 15, self.TOP))
+        pg.draw.rect(surf, pg.Color('Red'),
+                     (self.LEFT + 16 * self.CELL_SIZE + 10 * self.board_col + 15, self.TOP + 10 * self.board_row, 160, 160),
+                     1)
+
+    def minimap_changed(self):
+        fon = Image.new("RGBA", (self.height * 10, self.width * 10), (0, 0, 0))
+        for i in range(self.height):
+            for j in range(self.width):
+                bpic = self.pilimages[self.background_board[i][j].img_name]
+                bpic = bpic.resize((10, 10))
+                fon.paste(bpic, (j * 10, i * 10), bpic)
+                if self.primary_board[i][j] != '*':
+                    ppic = self.pilimages[self.primary_board[i][j].img_name]
+                    ppic = ppic.resize((10, 10))
+                    fon.paste(ppic, (j * 10, i * 10), ppic)
+        self.minimap = pg.image.fromstring(fon.tobytes(), fon.size, fon.mode)
+
 
 def run_mapgenerator():
     pg.init()
@@ -232,6 +265,10 @@ def run_mapgenerator():
     screen = pg.display.set_mode(size)
     clock = pg.time.Clock()
     board = Board(32, 32)
+    for i in board.all_objects:
+        im = Image.open(f"generatorFiles/{i[1]}")
+        board.pilimages[i[1]] = im.convert("RGBA")
+    board.minimap_changed()
     board.render_interface(screen)
     pg.display.flip()
     running = True
@@ -260,6 +297,6 @@ def run_mapgenerator():
         board.background_objects.draw(screen)
         board.primary_objects.draw(screen)
         pg.display.flip()
-        clock.tick(15)
+        clock.tick(25)
 
     pg.quit()
