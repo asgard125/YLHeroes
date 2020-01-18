@@ -486,7 +486,5 @@ def run_cosher_city(name, x, y, garrisonn, entered_hero, t=0, w=3, s=2, z=2, l=2
 
 
 
-run_cosher_city('Бульба', 1, 1, [Skeleton(98), Zombie(220), Leach(5), Archer(66), SpearMan(12)], Zuldan(1, 1))
-
 
 
