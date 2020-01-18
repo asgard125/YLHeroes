@@ -19,7 +19,7 @@ class City:
         self.panorama = 0
         self.buy_unit = 1
         self.buy_hero = 2
-        self.upgrade_city = 3
+        self.army_interact = 3
         self.unit = None    # Заглушка
 
         self.name = name
@@ -60,9 +60,6 @@ class City:
             self.able_archer = 10
             self.able_cavalryman = 4
 
-
-    # Отрисовка разных видов интерфейса
-    # Отрисовка найма юнитов
     def draw_buy_unit_window(self, unit, able, back_ground):
         screen.blit(self.buy_unit_surf, (164, 143))
         screen.blit(back_ground, (511, 262))
@@ -151,19 +148,36 @@ class City:
             surf = pygame.image.load(path + str(obj) + '.png')
         return surf
 
-    def check_click_garrison(self, x, y):
+    def check_click_with_army(self, x, y):
+        check = '', 5
         if 586 < y < 713:
             if 457 < x < 547:
-                return 0
-            if 550 < x < 639:
-                return 1
-            if 642 < x < 728:
-                return 2
-            if 735 < x < 823:
-                return 3
-            if 829 < x < 914:
-                return 4
-        return 5
+                check = 'garrison', 0
+            elif 550 < x < 639:
+                check = 'garrison', 1
+            elif 642 < x < 728:
+                check = 'garrison', 2
+            elif 735 < x < 823:
+                check = 'garrison', 3
+            elif 829 < x < 914:
+                check = 'garrison', 4
+            else:
+                check = 'garrison', 5
+        elif 775 < y < 903:
+            if 457 < x < 544:
+                check = 'army', 0
+            elif 549 < x < 639:
+                check = 'army', 1
+            elif 544 < x < 713:
+                check = 'army', 2
+            elif 736 < x < 823:
+                check = 'army', 3
+            elif 828 < x < 915:
+                check = 'army', 4
+            else:
+                check = 'army', 5
+        return check
+
 
     def check_unit(self, unit):
         if unit.name == 'Скелеты':
@@ -266,41 +280,89 @@ class CosherCity(City):
 
 city = CosherCity(name='Бакареш', x=2, y=2, tavern=0, level=3, wall=3, skeleton=1,
                   zombie=1, leach=1, horseman_of_the_apocalypse=0,
-                  necromancer=0, garrison=['', '', '', '', '', '', ''], hero_in_garrison=None, entered_hero = Zuldan(2, 2), hero1=None, hero2=None)
+                  necromancer=0, garrison=['', '', '', '', ''], hero_in_garrison=None, entered_hero = Zuldan(2, 2), hero1=None, hero2=None)
 run = 1
 
 while run:
+
+
+    if type(city.active) == tuple:
+        pygame.draw.rect(screen, (255, 255, 255), (20, 20, 20, 20))
+
+    if city.active == city.panorama:
+        city.draw_panorama()
+
+    if city.active == city.buy_unit:
+        city.draw_buy_unit_window(city.unit, city.able, city.buy_unit_bg_surf)
+
+    pygame.display.flip()
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = 0
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
+                if pygame.key.get_pressed()[pygame.K_LCTRL]:
+                    print('asa')
+                    check = city.check_click_with_army(event.pos[0], event.pos[1])
+                    if check[1] != 5:
+                        if check[0] == 'garrison':
+                            if city.garrison[check[1]].count > 1:
+                                city.garrison[check[1]].count -= 1
+                                for i in range(len(city.garrison)):
+                                    if city.garrison[i] == '':
+                                        city.garrison[i] = city.garrison[check[1]]
+                                        city.garrison[i].count = 1
+                                        city.active = city.panorama
+                                        break
+
                 if type(city.active) == tuple:
-                    if city.active[0] in city.garrison:
-                        check = city.check_click_garrison(event.pos[0], event.pos[1])
-                        if check < 5:
-                            print(city.active)
-                            if check == city.active[1]:
-                                pass
-                            elif city.garrison[check] == '':
-                                city.garrison[check] = city.active[0]
-                                city.garrison[city.active[1]] = ''
-                                city.active = city.panorama
-                            elif city.garrison[check].name == city.active[0].name:
-                                city.garrison[check].count += city.active[0].count
-                                city.garrison[city.active[1]] = ''
-                                city.active = city.panorama
-                            else:
-                                city.garrison[check], city.garrison[city.active[1]] = city.garrison[city.active[1]], city.garrison[check]
-                                city.active = city.panorama
-                        print(check, 's',
-                              city.garrison[check], 's',
-                              city.garrison[0], 's',
-                              city.active)
+                    check = city.check_click_with_army(event.pos[0], event.pos[1])
+
+                    if check == city.active:
                         break
+                    if check[1] == 5:
+                        city.active = city.panorama
+                        break
+                    elif city.active[0] == 'garrison' and check[0] == 'army':
+                        if city.entered_hero.army[check[1]] == '':
+                            city.entered_hero.army[check[1]] = city.garrison[city.active[1]]
+                            city.garrison[city.active[1]] = ''
+                        elif city.entered_hero.army[check[1]].name == city.garrison[city.active[1]].name:
+                            city.entered_hero.army[check[1]].count +=city.garrison[city.active[1]].count
+                            city.garrison[city.active[1]] = ''
+
+                    elif city.active[0] == 'army' and check[0] == 'garrison':
+                        if city.garrison[check[1]] == '':
+                            city.garrison[check[1]] = city.entered_hero.army[city.active[1]]
+                            city.entered_hero.army[city.active[1]] = ''
+                        elif city.garrison[check[1]].name == city.entered_hero.army[city.active[1]].name:
+                            city.garrison[check[1]].count += city.entered_hero.army[city.active[1]].count
+                            city.entered_hero.army[city.active[1]] = ''
+
+                    elif city.active[0] == 'army' and check[0] == 'army':
+                        if city.entered_hero.army[check[1]] == '':
+                            city.entered_hero.army[check[1]] = city.entered_hero.army[city.active[1]]
+                            city.entered_hero.army[city.active[1]] = ''
+                        elif city.entered_hero.army[check[1]].name == city.entered_hero.army[city.active[1]].name:
+                            city.entered_hero.army[check[1]].count += city.entered_hero.army[city.active[1]].count
+                            city.entered_hero.army[city.active[1]] = ''
+
+                    elif city.active[0] == 'garrison' and check[0] == 'garrison':
+                        if city.garrison[check[1]] == '':
+                            city.garrison[check[1]] = city.garrison[city.active[1]]
+                            city.garrison[city.active[1]] = ''
+                        elif city.garrison[check[1]].name == city.garrison[city.active[1]].name:
+                            city.garrison[check[1]].count += city.garrison[city.active[1]].count
+                            city.garrison[city.active[1]] = ''
+
+                    city.active = city.panorama
+                    break
+
+
 
                 if city.active == city.panorama:
-                    # print(event.pos[0])
+                    print('x=', event.pos[0], ', y=', event.pos[1])
                     if 100 < event.pos[0] < 296 and 400 < event.pos[1] < 530:
                         city.active = city.buy_unit
                         city.unit = Skeleton(city.able_skeletons)
@@ -316,10 +378,18 @@ while run:
                         city.unit = Leach(city.able_leaches)
                         city.able = city.able_leaches
 
-                    check = city.check_click_garrison(event.pos[0], event.pos[1])
-                    if check < 5:
-                        if city.garrison[check] != '':
-                            city.active = (city.garrison[check], check)
+                    check = city.check_click_with_army(event.pos[0], event.pos[1])
+                    if check[1] != 5:
+                        if check[0] == 'army':
+                            if city.entered_hero.army[check[1]] == '':
+                                check = None
+                        elif check[0] == 'garrison':
+                            if city.garrison[check[1]] == '':
+                                check = None
+                        if check == None:
+                            pass
+                        else:
+                            city.active = check
 
                     # < -------------------------------------------------------------------------------------------------Заглушки
 
@@ -366,8 +436,6 @@ while run:
                                     city.active = city.panorama
                                     break
 
-
-
                 # Закрытие окна магазина
                 if city.active == city.buy_hero:
                     if 802 < event.pos[0] < 919 and 815 < event.pos[1] < 876:
@@ -381,13 +449,9 @@ while run:
                 elif city.active == city.panorama:
                     print("Нот энд'")  # <---------------------------------------------------------------------------------Заглушка
 
-    if city.active == city.panorama:
-        city.draw_panorama()
 
-    if city.active == city.buy_unit:
-        city.draw_buy_unit_window(city.unit, city.able, city.buy_unit_bg_surf)
 
-    pygame.display.flip()
+
 
 
 
