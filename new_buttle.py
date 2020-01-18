@@ -14,7 +14,7 @@ color = (255, 255, 255)
 
 
 def load_image(name, colorkey=None):
-    fullname = os.path.join('data', name)
+    fullname = os.path.join(f"data/UNIT_IMG_BITTLE", name)
     image = pygame.image.load(fullname)
     if colorkey is not None:
         if colorkey == -1:
@@ -87,7 +87,7 @@ class Mob(pygame.sprite.Sprite):
         self.destination = self.place
         self.left = 10
         self.top = 10
-        self.cell_size = 50
+        self.cell_size = 5
         self.img = 'Skeleton.gif'
         self.kl_img = load_image(self.img, -1).convert()
         self.kl_img = pygame.transform.rotate(self.kl_img, 0)
