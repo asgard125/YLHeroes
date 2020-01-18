@@ -226,7 +226,7 @@ class Board:
             self.root.destroy()
 
 
-def run():
+def run_mapgenerator():
     pg.init()
     size = 1280, 720
     screen = pg.display.set_mode(size)
