@@ -131,7 +131,7 @@ class Mob(pygame.sprite.Sprite):
             self.kl.rect.y = self.top + self.place[1] * self.cell_size
             self.mob_gr = pygame.sprite.Group()
             self.mob_gr.add(self.kl)
-            pygame.time.wait(50)
+            pygame.time.wait(15)
         self.mob_gr.draw(win)
         text_coin = self.font.render(f'{self.coin}', 1, (180, 0, 0))
         win.blit(text_coin, (self.kl.rect.x + 30, self.kl.rect.y + 45))
@@ -276,7 +276,7 @@ class Motion:
     def __init__(self, list_mobs, flag_good=True):
         self.flag_good = flag_good
         self.motin = 0
-        print(list_mobs)
+        self.run = True
         self.kindn_ = list_mobs
         self.kindness = []
         self.y_ = 0
@@ -314,18 +314,21 @@ class Motion:
         self.field.rect.y = 0
         self.field_gr = pygame.sprite.Group()
         self.field_gr.add(self.field)
-        #
-        # self.img_ = 'game over.jpg'
-        # self.kl_img_ = load_image(self.img_, -1).convert()
-        # self.kl_img_ = pygame.transform.rotate(self.kl_img, 0)
-        # self.kl_img_ = pygame.transform.scale(self.kl_img, (1200, 750))
-        # self.field_ = pygame.sprite.Sprite()
-        # self.field.image_ = self.kl_img_
-        # self.field.rect_ = self.field.image.get_rect()
-        # self.field.rect.x_ = 0
-        # self.field.rect.y_ = 0
-        # self.field_gr = pygame.sprite.Group()
-        # self.field_gr.add(self.field)
+
+        self.img = 'final_battle.png'
+        self.final_img = load_image(self.img, -1).convert()
+        self.final_img = pygame.transform.rotate(self.final_img, 0)
+        self.final_img = pygame.transform.scale(self.final_img, (700, 750))
+        self.final = pygame.sprite.Sprite()
+        self.final.image = self.final_img
+        self.final.rect = self.field.image.get_rect()
+        self.final.rect.x = 200
+        self.final.rect.y = 0
+        self.final_gr = pygame.sprite.Group()
+        self.final_gr.add(self.final)
+        self.font = pygame.font.SysFont(None, 100)
+
+        self.run = True
 
     def render_field(self):
         self.field_gr.draw(win)
@@ -343,11 +346,9 @@ class Motion:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if board.get_cell(event.pos):
                 prov = [board.get_cell(event.pos)[0], board.get_cell(event.pos)[1]]
-                print(m.mob_pos)
                 if event.button == 1 and not(self.mob_pos.count(prov)) and not(m.mob_pos.count(prov)):  # !!!
                     W = False
                     while not W:
-                        print(0)
                         win.fill((0, 0, 0))
                         self.render_field()
                         board.render()
@@ -361,14 +362,12 @@ class Motion:
                             return 1
 
                 if event.button == 1 and m.mob_pos.count(prov):
-                    print(1)
                     W = False
                     n = 0
                     for i in range(len(m.mob_pos)):
                         if m.mob_pos[i] == prov:
                             n = i
                     pos = [board.get_cell(event.pos)[0], board.get_cell(event.pos)[1]]
-                    print(pos)
                     if mob.place[1] > m.kindness[n].place[1]:
                         pos[1] += 1
                     elif mob.place[1] < m.kindness[n].place[1]:
@@ -388,11 +387,10 @@ class Motion:
                             flag_kil = False
                             if pos == mob.place:
                                 flag_kil = m.kindness[n].viability(mob.brunt())
-                            print(self.kindness)
                             if flag_kil:
-                                if len(m.kindness) == 1:
-                                    print('Победа')
                                 del m.kindness[n]
+                                if len(m.kindness) == 0:
+                                    self.run = False
                                 m.pos()
                             self.motin += 1
                             self.pos()
@@ -415,24 +413,38 @@ class Motion:
         for i in self.kindness:
             i.set_view(left, top, cell_size)
 
-    def declaration_of_victory(self):
-        pass
+    def declaration_of_victory(self, event):
+        self.final_gr.draw(win)
+        text_coin = self.font.render(f'Победа', 1, (180, 0, 0))
+        win.blit(text_coin, (self.final.rect.x + 200, self.final.rect.y + 290))
+        if event:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if 775 <= event.pos[0] < 872 and 670 <= event.pos[1] < 722:
+                    return False
+        return True
+
+    def running_broadcast(self):
+        return self.run
 
 
 class Main:
-    def __init__(self, W1, W2, Z1, Z2):
-        m1 = Motion(W1, W2)   # 'Конники', "Лучники", "Личи", "Скелеты", "Копейщики", "Зомби"
-        m2 = Motion(Z1, Z2)
+    def __init__(self, W1, Z1):
+        introduction = pygame.mixer.music.load(f'data/MUSIC/introduction_battle.mp3')
+        print(introduction)
+        pygame.mixer.music.play()
+        m1 = Motion(W1, True)
+        m2 = Motion(Z1, False)
         board = Board(15, 10)
         board.set_view(100, 130, 60)
         m1.set_view(100, 130, 60)
         m2.set_view(100, 130, 60)
-        running = True
+        self.running = True
+        self.running2 = True
         mot = True
-        while running:
+        while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
+                    self.running = False
                 board.button_defense(event)
                 if mot:
                     w = m1.move_ol(event, board, m2)
@@ -442,11 +454,19 @@ class Main:
                     w = m2.move_ol(event, board, m1)
                     if w:
                         mot = True
+            self.running = m1.running_broadcast()
             m1.render_field()
             m1.render()
             m2.render()
             board.render()
             pygame.display.flip()
 
+        while self.running2:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running2 = False
+                self.running2 = m1.declaration_of_victory(event)
+            pygame.display.flip()
 
-m = Main([["Скелеты", 17], ["Конники", 35], ["Лучники", 35], ["Личи", 35]], True, [["Скелеты", 17], ["Конники", 35], ["Лучники", 35], ["Личи", 35]], False)
+
+m = Main([["Скелеты", 17], ["Конники", 35], ["Лучники", 35], ["Личи", 35]], [["Скелеты", 17]])
