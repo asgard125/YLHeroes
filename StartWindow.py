@@ -2,7 +2,6 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5 import uic
 from MapGenerator import run_mapgenerator
-from StrategicGameplay import run_game
 from PyQt5.QtWidgets import QInputDialog
 
 
@@ -23,7 +22,7 @@ class MyWidget(QMainWindow):
                                                   maplist,
                                                   1, False)
         if OkPressed:
-            run_game(f"maps/{mapname}_primary", f"maps/{mapname}_background", f"maps/{mapname}_image")
+            pass
 
     def run_mapgenerator(self):
         run_mapgenerator()
