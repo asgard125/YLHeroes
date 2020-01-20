@@ -1,5 +1,6 @@
 import pygame
 from UnitTypes import *
+from SrategicView import *
 from Heroes import *
 
 
@@ -292,6 +293,7 @@ class CosherCity(City):
 
 def run_cosher_city(city):
     pygame.init()
+    global status, gold_player_1, gold_player_2
     city = CosherCity(name=city.name, x=city.x, y=city.y, tavern=city.tavern, level=city.level, wall=city.wall, skeleton=city.skeleton,
                       zombie=city.zombie, leach=city.leach, horseman_of_the_apocalypse=city.horseman_of_the_apocalypse,
                       necromancer=city.necromancer, garrison=city.garrison, entered_hero =city.entered_hero)
@@ -460,28 +462,32 @@ def run_cosher_city(city):
                                 city.count += 1
                         if 399 < event.pos[0] < 514 and 706 < event.pos[1] < 758:
                             if city.count > 0:
-                                print('1')
-                                print(city.garrison)
-                                if '' in city.garrison:
-                                    print('2')
-                                    for i in range(len(city.garrison)):
-                                        print('3')
-                                        if city.garrison[i] != '':
-                                            print('4')
-                                            if city.garrison[i].name == city.unit.name:
-                                                city.garrison[i].count += city.count
+                                sas = False
+                                if status == turn_player_1:
+                                    if city.count * city.unit.price < gold_player_1:
+                                        gold_player_1 -= city.count * city.unit.price
+                                        sas = True
+                                elif status == turn_player_2:
+                                    if city.count * city.unit.price < gold_player_1:
+                                        gold_player_2 -= city.count * city.unit.price
+                                        sas = True
+                                if sas:
+                                    if '' in city.garrison:
+                                        for i in range(len(city.garrison)):
+                                            if city.garrison[i] != '':
+                                                if city.garrison[i].name == city.unit.name:
+                                                    city.garrison[i].count += city.count
+                                                    city.check_unit(city.garrison[i])
+                                                    city.count = 0
+                                                    city.active = city.panorama
+                                                    break
+                                            elif city.garrison[i] == '':
+                                                city.garrison[i] = city.unit
                                                 city.check_unit(city.garrison[i])
+                                                city.garrison[i].count = city.count
                                                 city.count = 0
                                                 city.active = city.panorama
                                                 break
-                                        elif city.garrison[i] == '':
-                                            print('5')
-                                            city.garrison[i] = city.unit
-                                            city.check_unit(city.garrison[i])
-                                            city.garrison[i].count = city.count
-                                            city.count = 0
-                                            city.active = city.panorama
-                                            break
 
                     # Закрытие окна магазина
                     elif city.active == city.buy_hero:

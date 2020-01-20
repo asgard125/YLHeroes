@@ -230,9 +230,9 @@ def run_map(name):
                 hero_player_1.hero.x = j
                 hero_player_1.hero.y = i
                 hero_player_1.rect.x, hero_player_1.rect.y = hero_player_1.hero.x * cell_width, hero_player_1.hero.y * cell_width
-                for i in range(len(heroes)):
-                    if heroes[i] == hero_player_1.hero:
-                        del heroes[i]
+                for g in range(len(heroes)):
+                    if heroes[g] == hero_player_1.hero:
+                        del heroes[g]
                         break
 
             # Проверка на то, является ли координата точкой спауна героя 2
@@ -242,9 +242,9 @@ def run_map(name):
                 hero_player_2.hero.x = j
                 hero_player_2.hero.y = i
                 hero_player_2.rect.x, hero_player_2.rect.y = hero_player_2.hero.x * cell_width, hero_player_2.hero.y * cell_width
-                for i in range(len(heroes)):
-                    if heroes[i] == hero_player_2.hero:
-                        del heroes[i]
+                for g in range(len(heroes)):
+                    if heroes[g] == hero_player_2.hero:
+                        del heroes[g]
                         break
 
             # Остановка раскидки героев
@@ -370,6 +370,4 @@ def run_map(name):
                                     cities_list[city] = run_cosher_city(cities_list[city])
                     print(event.pos)
 
-
-
-run_map('test2')
+run_map('debug1')
