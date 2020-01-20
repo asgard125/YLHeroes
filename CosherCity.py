@@ -1,6 +1,9 @@
 import pygame
 from UnitTypes import *
+
 from Heroes import *
+
+
 
 
 def check_unit(unit):
@@ -281,9 +284,10 @@ class CosherCity(City):
             screen.blit(self.necromancer_surf, (800, 370))
 
 
-def run_cosher_city(city, screen):
+def run_cosher_city(city, screen, gold_player_1, gold_player_2, status, turn_player_1, turn_player_2):
     pygame.init()
     try:
+
         city = CosherCity(name=city.name, x=city.x, y=city.y, tavern=city.tavern, level=city.level, wall=city.wall,
                           skeleton=city.skeleton,
                           zombie=city.zombie, leach=city.leach, horseman_of_the_apocalypse=city.horseman_of_the_apocalypse,
@@ -299,6 +303,7 @@ def run_cosher_city(city, screen):
 
             if city.active == city.buy_unit:
                 city.draw_buy_unit_window(city.unit, city.able, city.buy_unit_bg_surf, screen)
+
 
             pygame.display.flip()
 
@@ -327,9 +332,6 @@ def run_cosher_city(city, screen):
                                                 city.entered_hero.army[i].count = 1
                                                 city.entered_hero.army[check[1]].count -= 1
                                                 break
-                                        print(city.garrison[0].count, city.garrison[1].count)
-                                        print(
-                                            city.garrison)  # <----------------------------------------------------------------дубаг
                             city.active = city.panorama
 
                         elif pygame.key.get_pressed()[pygame.K_LSHIFT] and type(city.active) != tuple:
@@ -414,7 +416,7 @@ def run_cosher_city(city, screen):
                             if 1114 < event.pos[0] < 1197 and 898 < event.pos[1] < 952:
                                 run = 0
                                 city.entered_hero = None
-                                return city
+                                return city, gold_player_1, gold_player_2, status, turn_player_1, turn_player_2
                             check = city.check_click_with_army(event.pos[0], event.pos[1])
                             if check[1] != 5:
                                 if check[0] == 'army':
@@ -429,22 +431,6 @@ def run_cosher_city(city, screen):
                                 else:
                                     city.active = check
 
-                            # < -------------------------------------------------------------------------------------------------Заглушки
-
-                            # if 70 < event.pos[0] < 70 + 125 and 170 < event.pos[1] < 170 + 193:
-                            #     city.active = city.buy_unit
-                            #     city.unit = HorsemanOfTheApocalypse
-
-                            # if 800 < event.pos[0] < 800 + 183 and 370 < event.pos[1] < 370 + 83:
-                            #     city.active = city.buy_unit
-                            #     city.unit = NecroMancer
-
-                            # if 630 < event.pos[0] < 630 + 174 and 110 < event.pos[1] < 110 + 158:
-                            #    city.active = city.upgrade_city
-
-                            # if 220 < event.pos[0] < 220 + 199 and 300 < event.pos[1] < 300 + 68:
-                            #     city.active = city.buy_hero
-
                         elif city.active == city.buy_unit:
                             if 684 < event.pos[0] < 801 and 705 < event.pos[1] < 764:
                                 city.count = 0
@@ -458,28 +444,34 @@ def run_cosher_city(city, screen):
                                     city.count += 1
                             if 399 < event.pos[0] < 514 and 706 < event.pos[1] < 758:
                                 if city.count > 0:
-                                    print('1')
-                                    print(city.garrison)
                                     if '' in city.garrison:
-                                        print('2')
-                                        for i in range(len(city.garrison)):
-                                            print('3')
-                                            if city.garrison[i] != '':
-                                                print('4')
-                                                if city.garrison[i].name == city.unit.name:
-                                                    city.garrison[i].count += city.count
+                                        check_enough_gold = False
+                                        if status == turn_player_1:
+                                            if city.count * city.unit.price < gold_player_1:
+                                                check_enough_gold = True
+                                                gold_player_1 -= city.count * city.unit.price
+                                                print('Оно дошло до золота')
+                                        elif status == turn_player_2:
+                                            if city.count * city.unit.price < gold_player_2:
+                                                gold_player_2 -= city.count * city.unit.price
+                                                check_enough_gold = True
+                                        if check_enough_gold:
+                                            for i in range(len(city.garrison)):
+                                                if city.garrison[i] != '':
+                                                    if city.garrison[i].name == city.unit.name:
+                                                        city.garrison[i].count += city.count
+                                                        city.check_unit(city.garrison[i])
+                                                        city.count = 0
+                                                        city.active = city.panorama
+                                                        break
+                                                elif city.garrison[i] == '':
+                                                    print('5')
+                                                    city.garrison[i] = city.unit
                                                     city.check_unit(city.garrison[i])
+                                                    city.garrison[i].count = city.count
                                                     city.count = 0
                                                     city.active = city.panorama
                                                     break
-                                            elif city.garrison[i] == '':
-                                                print('5')
-                                                city.garrison[i] = city.unit
-                                                city.check_unit(city.garrison[i])
-                                                city.garrison[i].count = city.count
-                                                city.count = 0
-                                                city.active = city.panorama
-                                                break
 
                         # Закрытие окна магазина
                         elif city.active == city.buy_hero:
@@ -489,11 +481,11 @@ def run_cosher_city(city, screen):
                 # Закрытие окон и самого города
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        if city.active == city.buy_unit or city.active == city.buy_hero:  # or city.active == city.upgrade_city
+                        if city.active == city.buy_unit or city.active == city.buy_hero:
                             city.active = city.panorama
                         elif city.active == city.panorama:
                             run = 0
                             city.entered_hero = None
-                            return city  # <---------------------------------------------------------------------------------Заглушка
+                            return city, gold_player_1, gold_player_2, status, turn_player_1, turn_player_2
     except BaseException as b:
         print(b)

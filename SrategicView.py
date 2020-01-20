@@ -145,7 +145,7 @@ def run_map(name):
 
         #  Передвижение героя и его интерактив с объектами
         def move_hero(self, x, y):
-            global gold_player_1, gold_player_2
+            global gold_player_1, gold_player_2, status, turn_player_1, turn_player_2
             if self.hero.move < self.hero.able_to_move:
                 if passive_objects[self.hero.y + y][self.hero.x + x] not in ['2', '3']:
 
@@ -180,15 +180,11 @@ def run_map(name):
                                 sprite.remove(active_sprites)
                                 break
                     elif active_objects[self.hero.y][self.hero.x] == '2':
-                        print('1')
                         for c in range(len(cities_list)):
-                            print('2')
                             if cities_list[c].x == self.hero.x and cities_list[c].y == self.hero.y:
-                                print('3')
                                 cities_list[c].entered_hero = hero
                                 if cities_list[c].city_type == 'cosher':
-                                    print('4')
-                                    cities_list[c] = run_cosher_city(cities_list[c], screen)
+                                    cities_list[c], gold_player_1, gold_player_2, status, turn_player_1, turn_player_2 = run_cosher_city(cities_list[c], screen, gold_player_1, gold_player_2, status, turn_player_1, turn_player_2)
                                     break
                     elif hero_player_1.hero.x == hero_player_2.hero.x and hero_player_1.hero.y == hero_player_2.hero.y:
                         print(
@@ -360,12 +356,12 @@ def run_map(name):
                                 else:
                                     week = 0
                                     month += 1
-                                    gold_player_1 += 1500
-                                    gold_player_2 += 1500
+                                    gold_player_1 += 5500
+                                    gold_player_2 += 5500
                     else:
                         coords = check_click(event.pos[0], event.pos[1], background)
                         for city in range(len(cities_list)):
                             if cities_list[city].x == coords[0] and cities_list[city].y == coords[1]:
                                 if cities_list[city].city_type == 'cosher':
-                                    cities_list[city] = run_cosher_city(cities_list[city], screen)
+                                    cities_list[city], gold_player_1, gold_player_2, status, turn_player_1, turn_player_2 = run_cosher_city(cities_list[city], screen, gold_player_1, gold_player_2, status, turn_player_1, turn_player_2)
 
