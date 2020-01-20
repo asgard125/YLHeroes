@@ -8,7 +8,6 @@ import os
 global gold_player_1, gold_player_2, turn_player_1, turn_player_2, hero_player_1, hero_player_2, status, month, week, day
 
 
-
 # загрузка изображений
 def load_image(name, direct=None, colorkey=None):
     image = None
@@ -26,18 +25,20 @@ def load_image(name, direct=None, colorkey=None):
         image = image.convert_alpha()
     return image
 
+
 #  Загрузить уровень
 def load_level(name):
     maps = os.listdir(path="maps")
-    if name + '_background.txt' in maps and name + '_image.png' in maps and name+'_primary.txt' in maps:
+    if name + '_background.txt' in maps and name + '_image.png' in maps and name + '_primary.txt' in maps:
         with open('maps/' + name + '_background.txt', 'r') as file:
             passive_objects = [line.strip() for line in file]
-        with open('maps/' + name + '_primary.txt', 'r') as file:
-            active_objects = [list(i) for i in [line.strip() for line in file]]
+        with open('maps/' + name + '_primary.txt', 'r') as file1:
+            active_objects = [list(i) for i in [line.strip() for line in file1]]
         background_image = load_image(name + '_image.png', 'load_level')
         return active_objects, passive_objects, background_image
 
-def draw_map_interface():
+
+def draw_map_interface(screen):
     right_int = load_image('right_interface.png', 'load_interface')
     right_int = pygame.transform.scale(right_int, (300, 950))
     if status == turn_player_1:
@@ -50,36 +51,43 @@ def draw_map_interface():
         hero = hero_player_2
     screen.blit(right_int, (900, 0))
     screen.blit(flag, (941, 41))
-    draw_down_interface()
-    draw_hero_interface(hero)
+    draw_down_interface(screen)
+    draw_hero_interface(hero, screen)
 
-def draw_hero_interface(hero):
+
+def draw_hero_interface(hero, screen):
     screen.blit(hero.hero.icon, (970, 1008))
     screen.blit(pygame.font.Font(None, 35).render(hero.hero.name, 1, (255, 255, 255)), (975, 1017))
     screen.blit(pygame.font.Font(None, 35).render(str(hero.hero.attack_bonus), 1, (255, 255, 255)), (925, 1087))
     screen.blit(pygame.font.Font(None, 35).render(str(hero.hero.deffence_bonus), 1, (255, 255, 255)), (945, 1017))
 
 
-def draw_down_interface():
+def draw_down_interface(screen):
     global day, month, week
     down_interface = load_image('resorses_interface.png', 'load_interface', 0)
     down_interface = pygame.transform.scale(down_interface, (1200, 50))
     screen.blit(down_interface, (0, 950))
     fonts = pygame.font.Font(None, 20)
-    screen.blit(fonts.render('Месяц: {}, Неделя: {} День: {}'.format(str(month), str(week), str(day)), 1, (255, 255, 255)), (930, 965))
+    screen.blit(
+        fonts.render('Месяц: {}, Неделя: {} День: {}'.format(str(month), str(week), str(day)), 1, (255, 255, 255)),
+        (930, 965))
     if status == turn_player_1:
         screen.blit(fonts.render(str(gold_player_1), 1, (255, 255, 255)), (815, 965))
     elif status == turn_player_2:
         screen.blit(fonts.render(str(gold_player_2), 1, (255, 255, 255)), (815, 965))
 
+
 def check_click(x, y, background):
     if background.rect.x + 1920 > x > background.rect.x and background.rect.y + 1920 > y > background.rect.y:
-        return (x - background.rect.x ) // 60, (y - background.rect.y) // 60
+        return (x - background.rect.x) // 60, (y - background.rect.y) // 60
+
 
 # ----------------------------------------------------------------------------------------------------------------------Стартовый цикл
 def run_map(name):
     pygame.init()
-
+    width = 1200
+    height = 1000
+    screen = pygame.display.set_mode((width, height))
 
     # Надпись загрузки
     screen.fill(pygame.Color('black'))
@@ -180,12 +188,11 @@ def run_map(name):
                                 cities_list[c].entered_hero = hero
                                 if cities_list[c].city_type == 'cosher':
                                     print('4')
-                                    cities_list[c] = run_cosher_city(cities_list[c])
+                                    cities_list[c] = run_cosher_city(cities_list[c], screen)
                                     break
                     elif hero_player_1.hero.x == hero_player_2.hero.x and hero_player_1.hero.y == hero_player_2.hero.y:
-                        print('start battle here')  # --------------------------------------------------------------------батя и сын снова сцепились по пьяне
-
-
+                        print(
+                            'start battle here')  # --------------------------------------------------------------------батя и сын снова сцепились по пьяне
 
     # Настройки карты. Актив, пассив и фон
     active_objects, passive_objects, background_img = load_level(name)
@@ -198,16 +205,13 @@ def run_map(name):
 
     # Добавление спрайтов на карту
     background = Background(background_img)  # Спрайт фонового изображения
-        # Добавление интерактивных объектов в группу спрайтов
+    # Добавление интерактивных объектов в группу спрайтов
     for i in range(len(active_objects)):
         for j in range(len(active_objects[0])):
             if active_objects[i][j] != '*' and active_objects[i][j] != 'q' and active_objects[i][j] != 'w':
                 if active_objects[i][j] == '2':
                     cities_list.append(CosherCity(choice(cities_names), j, i, ['', '', '', '', ''], None))
                 active = Active(active_objects[i][j], j, i)
-
-
-
 
     global gold_player_1, gold_player_2, turn_player_1, turn_player_2, hero_player_1, hero_player_2, status, month, week, day
 
@@ -230,44 +234,40 @@ def run_map(name):
                 hero_player_1.hero.x = j
                 hero_player_1.hero.y = i
                 hero_player_1.rect.x, hero_player_1.rect.y = hero_player_1.hero.x * cell_width, hero_player_1.hero.y * cell_width
-                for i in range(len(heroes)):
-                    if heroes[i] == hero_player_1.hero:
-                        del heroes[i]
+                for k in range(len(heroes)):
+                    if heroes[k] == hero_player_1.hero:
+                        del heroes[k]
                         break
 
             # Проверка на то, является ли координата точкой спауна героя 2
-            elif active_objects[i][j] == 'w':
-                hero = choice(heroes) # Выбирается случайный герой
+            if active_objects[i][j] == 'w':
+                hero = choice(heroes)  # Выбирается случайный герой
                 hero_player_2 = MapHero(hero)
                 hero_player_2.hero.x = j
                 hero_player_2.hero.y = i
                 hero_player_2.rect.x, hero_player_2.rect.y = hero_player_2.hero.x * cell_width, hero_player_2.hero.y * cell_width
-                for i in range(len(heroes)):
-                    if heroes[i] == hero_player_2.hero:
-                        del heroes[i]
+                for k in range(len(heroes)):
+                    if heroes[k] == hero_player_2.hero:
+                        del heroes[k]
                         break
 
             # Остановка раскидки героев
-            if hero_player_1 != None and hero_player_2 != None:
+            if hero_player_1 is not None and hero_player_2 is not None:
                 break
 
-
     # Набор различных статусов
-    turn_player_1 = 1   # ход игрока 1
-    turn_player_2 = 2   # ход игрока 2
+    turn_player_1 = 1  # ход игрока 1
+    turn_player_2 = 2  # ход игрока 2
 
     # золото первого и второго игрока
-    gold_player_1 = 0   # Количество золота игрок 1
-    gold_player_2 = 0   # Количество золота игрок 2
+    gold_player_1 = 0  # Количество золота игрок 1
+    gold_player_2 = 0  # Количество золота игрок 2
 
     # Месяц, неделя, день
     month, week, day = 0, 0, 1
 
-
-    #Статус в данный момент
+    # Статус в данный момент
     status = turn_player_1
-
-
 
     run = 1
     while run:
@@ -278,7 +278,7 @@ def run_map(name):
         hero_sprites.draw(screen)
         pygame.draw.rect(screen, pygame.Color('red'), (hero_player_1.rect.x + 20, hero_player_1.rect.y, 15, 5))
         pygame.draw.rect(screen, pygame.Color('blue'), (hero_player_2.rect.x + 20, hero_player_2.rect.y, 15, 5))
-        draw_map_interface()
+        draw_map_interface(screen)
         pygame.display.flip()
 
         for event in pygame.event.get():
@@ -367,9 +367,5 @@ def run_map(name):
                         for city in range(len(cities_list)):
                             if cities_list[city].x == coords[0] and cities_list[city].y == coords[1]:
                                 if cities_list[city].city_type == 'cosher':
-                                    cities_list[city] = run_cosher_city(cities_list[city])
-                    print(event.pos)
+                                    cities_list[city] = run_cosher_city(cities_list[city], screen)
 
-
-
-run_map('test2')
