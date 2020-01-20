@@ -11,6 +11,7 @@ screen = pygame.display.set_mode((width, height))
 
 
 
+
 def check_unit(unit):
     if unit.name == Skeleton(unit.count).name:
         return Skeleton(unit.count)
@@ -24,6 +25,7 @@ def check_unit(unit):
         return SpearMan(unit.count)
     elif unit.name == Archer(unit.count).name:
         return Archer(unit.count)
+
 
 # хранит параметры, для отрисовки окон и окошек
 class City:
@@ -51,9 +53,8 @@ class City:
         # 2 героя, доступных для покупки в таверне
         # self.hero1 = hero1
         # self.hero2 = hero2
-
         # Гарнизон города
-        #self.hero_in_garrison = hero_in_city
+        # self.hero_in_garrison = hero_in_city
         self.garrison = garrison
 
         # герой который вошел в город
