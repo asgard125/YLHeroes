@@ -33,8 +33,7 @@ def load_level(name):
         with open('maps/' + name + '_background.txt', 'r') as file:
             passive_objects = [line.strip() for line in file]
         with open('maps/' + name + '_primary.txt', 'r') as file:
-            active_objects = [line.strip() for line in file]
-            print(active_objects)
+            active_objects = [list(i) for i in [line.strip() for line in file]]
         background_image = load_image(name + '_image.png', 'load_level')
         return active_objects, passive_objects, background_image
 
@@ -77,7 +76,7 @@ def check_click(x, y, background):
     if background.rect.x + 1920 > x > background.rect.x and background.rect.y + 1920 > y > background.rect.y:
         return (x - background.rect.x ) // 60, (y - background.rect.y) // 60
 
-# Стартовый цикл
+# ----------------------------------------------------------------------------------------------------------------------Стартовый цикл
 def run_map(name):
     pygame.init()
 
@@ -153,6 +152,7 @@ def run_map(name):
                         self.hero.move += 50
 
                     if active_objects[self.hero.y][self.hero.x] == '1':
+                        active_objects[self.hero.y][self.hero.x] = '*'
                         if status == turn_player_1:
                             gold_player_1 += choice([500, 700])
                         elif status == turn_player_2:
@@ -182,6 +182,8 @@ def run_map(name):
                                     print('4')
                                     cities_list[c] = run_cosher_city(cities_list[c])
                                     break
+                    elif hero_player_1.hero.x == hero_player_2.hero.x and hero_player_1.hero.y == hero_player_2.hero.y:
+                        print('start battle here')  # --------------------------------------------------------------------батя и сын снова сцепились по пьяне
 
 
 
