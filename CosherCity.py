@@ -360,29 +360,30 @@ def run_cosher_city(city):
                         if check[1] == 5:
                             city.active = city.panorama
                             break
-                        elif city.active[0] == 'garrison' and check[0] == 'army':
-                            if city.entered_hero.army[check[1]] == '':
-                                city.entered_hero.army[check[1]] = city.garrison[city.active[1]]
-                                city.garrison[city.active[1]] = ''
-                            elif city.entered_hero.army[check[1]].name == city.garrison[city.active[1]].name:
-                                city.entered_hero.army[check[1]].count +=city.garrison[city.active[1]].count
-                                city.garrison[city.active[1]] = ''
+                        if city.entered_hero != None:
+                            if city.active[0] == 'garrison' and check[0] == 'army':
+                                if city.entered_hero.army[check[1]] == '':
+                                    city.entered_hero.army[check[1]] = city.garrison[city.active[1]]
+                                    city.garrison[city.active[1]] = ''
+                                elif city.entered_hero.army[check[1]].name == city.garrison[city.active[1]].name:
+                                    city.entered_hero.army[check[1]].count +=city.garrison[city.active[1]].count
+                                    city.garrison[city.active[1]] = ''
 
-                        elif city.active[0] == 'army' and check[0] == 'garrison':
-                            if city.garrison[check[1]] == '':
-                                city.garrison[check[1]] = city.entered_hero.army[city.active[1]]
-                                city.entered_hero.army[city.active[1]] = ''
-                            elif city.garrison[check[1]].name == city.entered_hero.army[city.active[1]].name:
-                                city.garrison[check[1]].count += city.entered_hero.army[city.active[1]].count
-                                city.entered_hero.army[city.active[1]] = ''
+                            elif city.active[0] == 'army' and check[0] == 'garrison':
+                                if city.garrison[check[1]] == '':
+                                    city.garrison[check[1]] = city.entered_hero.army[city.active[1]]
+                                    city.entered_hero.army[city.active[1]] = ''
+                                elif city.garrison[check[1]].name == city.entered_hero.army[city.active[1]].name:
+                                    city.garrison[check[1]].count += city.entered_hero.army[city.active[1]].count
+                                    city.entered_hero.army[city.active[1]] = ''
 
-                        elif city.active[0] == 'army' and check[0] == 'army':
-                            if city.entered_hero.army[check[1]] == '':
-                                city.entered_hero.army[check[1]] = city.entered_hero.army[city.active[1]]
-                                city.entered_hero.army[city.active[1]] = ''
-                            elif city.entered_hero.army[check[1]].name == city.entered_hero.army[city.active[1]].name:
-                                city.entered_hero.army[check[1]].count += city.entered_hero.army[city.active[1]].count
-                                city.entered_hero.army[city.active[1]] = ''
+                            elif city.active[0] == 'army' and check[0] == 'army':
+                                if city.entered_hero.army[check[1]] == '':
+                                    city.entered_hero.army[check[1]] = city.entered_hero.army[city.active[1]]
+                                    city.entered_hero.army[city.active[1]] = ''
+                                elif city.entered_hero.army[check[1]].name == city.entered_hero.army[city.active[1]].name:
+                                    city.entered_hero.army[check[1]].count += city.entered_hero.army[city.active[1]].count
+                                    city.entered_hero.army[city.active[1]] = ''
 
                         elif city.active[0] == 'garrison' and check[0] == 'garrison':
                             if city.garrison[check[1]] == '':
@@ -394,8 +395,6 @@ def run_cosher_city(city):
 
                         city.active = city.panorama
                         break
-
-
 
                     elif city.active == city.panorama:
                         print('x=', event.pos[0], ', y=', event.pos[1]) #----------------------------------------------------Дебаг
@@ -414,11 +413,16 @@ def run_cosher_city(city):
                             city.unit = Leach(city.able_leaches)
                             city.able = city.able_leaches
 
+                        if 1114 < event.pos[0] < 1197 and 898 < event.pos[1] < 952:
+                            run = 0
+                            city.entered_hero = None
+                            return city
                         check = city.check_click_with_army(event.pos[0], event.pos[1])
                         if check[1] != 5:
                             if check[0] == 'army':
-                                if city.entered_hero.army[check[1]] == '':
-                                    check = None
+                                if city.entered_hero != None:
+                                    if city.entered_hero.army[check[1]] == '':
+                                        check = None
                             elif check[0] == 'garrison':
                                 if city.garrison[check[1]] == '':
                                     check = None
@@ -456,21 +460,28 @@ def run_cosher_city(city):
                                 city.count += 1
                         if 399 < event.pos[0] < 514 and 706 < event.pos[1] < 758:
                             if city.count > 0:
-                                for i in range(len(city.garrison)):
-                                    if city.garrison[i] != '':
-                                        if city.garrison[i].name == city.unit.name:
-                                            city.garrison[i].count += city.count
+                                print('1')
+                                print(city.garrison)
+                                if '' in city.garrison:
+                                    print('2')
+                                    for i in range(len(city.garrison)):
+                                        print('3')
+                                        if city.garrison[i] != '':
+                                            print('4')
+                                            if city.garrison[i].name == city.unit.name:
+                                                city.garrison[i].count += city.count
+                                                city.check_unit(city.garrison[i])
+                                                city.count = 0
+                                                city.active = city.panorama
+                                                break
+                                        elif city.garrison[i] == '':
+                                            print('5')
+                                            city.garrison[i] = city.unit
                                             city.check_unit(city.garrison[i])
+                                            city.garrison[i].count = city.count
                                             city.count = 0
                                             city.active = city.panorama
                                             break
-                                    elif city.garrison[i] == '':
-                                        city.garrison[i] = city.unit
-                                        city.check_unit(city.garrison[i])
-                                        city.garrison[i].count = city.count
-                                        city.count = 0
-                                        city.active = city.panorama
-                                        break
 
                     # Закрытие окна магазина
                     elif city.active == city.buy_hero:
@@ -484,6 +495,7 @@ def run_cosher_city(city):
                         city.active = city.panorama
                     elif city.active == city.panorama:
                         run = 0
+                        city.entered_hero = None
                         return city  # <---------------------------------------------------------------------------------Заглушка
 
 

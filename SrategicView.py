@@ -5,7 +5,7 @@ from random import choice, randint
 from Heroes import *
 import os
 
-global gold_player_1, gold_player_2, turn_player_1, turn_player_2, status, month, week, day
+global gold_player_1, gold_player_2, turn_player_1, turn_player_2, hero_player_1, hero_player_2, status, month, week, day
 
 
 
@@ -39,13 +39,27 @@ def load_level(name):
         return active_objects, passive_objects, background_image
 
 def draw_map_interface():
-    # main_int = load_image('main_interface.png', 'load_interface', -1)
-    # main_int = pygame.transform.scale(main_int, (1200, 950))
-    # main_int.set_colorkey(main_int.get_at((0, 0)))
     right_int = load_image('right_interface.png', 'load_interface')
     right_int = pygame.transform.scale(right_int, (300, 950))
+    if status == turn_player_1:
+        flag = load_image('red_flag.png', 'load_interface')
+        flag = pygame.transform.scale(flag, (1162 - 941, 278 - 41))
+        hero = hero_player_1
+    elif status == turn_player_2:
+        flag = load_image('blue_flag.png', 'load_interface')
+        flag = pygame.transform.scale(flag, (1162 - 941, 278 - 41))
+        hero = hero_player_2
     screen.blit(right_int, (900, 0))
+    screen.blit(flag, (941, 41))
     draw_down_interface()
+    draw_hero_interface(hero)
+
+def draw_hero_interface(hero):
+    screen.blit(hero.hero.icon, (970, 1008))
+    screen.blit(pygame.font.Font(None, 35).render(hero.hero.name, 1, (255, 255, 255)), (975, 1017))
+    screen.blit(pygame.font.Font(None, 35).render(str(hero.hero.attack_bonus), 1, (255, 255, 255)), (925, 1087))
+    screen.blit(pygame.font.Font(None, 35).render(str(hero.hero.deffence_bonus), 1, (255, 255, 255)), (945, 1017))
+
 
 def draw_down_interface():
     global day, month, week
@@ -157,6 +171,17 @@ def run_map(name):
                             if (sprite.x, sprite.y) == (self.hero.x, self.hero.y) and sprite.self_type == 'gold':
                                 sprite.remove(active_sprites)
                                 break
+                    elif active_objects[self.hero.y][self.hero.x] == '2':
+                        print('1')
+                        for c in range(len(cities_list)):
+                            print('2')
+                            if cities_list[c].x == self.hero.x and cities_list[c].y == self.hero.y:
+                                print('3')
+                                cities_list[c].entered_hero = hero
+                                if cities_list[c].city_type == 'cosher':
+                                    print('4')
+                                    cities_list[c] = run_cosher_city(cities_list[c])
+                                    break
 
 
 
@@ -176,12 +201,16 @@ def run_map(name):
         for j in range(len(active_objects[0])):
             if active_objects[i][j] != '*' and active_objects[i][j] != 'q' and active_objects[i][j] != 'w':
                 if active_objects[i][j] == '2':
-                    cities_list.append(CosherCity(choice(cities_names), j, i, [], None))
+                    cities_list.append(CosherCity(choice(cities_names), j, i, ['', '', '', '', ''], None))
                 active = Active(active_objects[i][j], j, i)
 
 
+
+
+    global gold_player_1, gold_player_2, turn_player_1, turn_player_2, hero_player_1, hero_player_2, status, month, week, day
+
     # Список с существующими героями, чтобы задавать их
-    heroes = [Orrin(0, 0), Zuldan(0, 0)]
+    heroes = [Orrin(0, 0), Zuldan(0, 0), Gardon(0, 0)]
 
     # -------------------------------------------------------------------------------------------------------------------Костыль
     hero_player_1 = None
@@ -220,7 +249,6 @@ def run_map(name):
             if hero_player_1 != None and hero_player_2 != None:
                 break
 
-    global gold_player_1, gold_player_2, turn_player_1, turn_player_2, status, month, week, day
 
     # Набор различных статусов
     turn_player_1 = 1   # ход игрока 1
@@ -241,6 +269,7 @@ def run_map(name):
 
     run = 1
     while run:
+
         screen.fill(pygame.Color('black'))
         bg_sprite.draw(screen)
         active_sprites.draw(screen)
@@ -329,12 +358,15 @@ def run_map(name):
                                 else:
                                     week = 0
                                     month += 1
+                                    gold_player_1 += 1500
+                                    gold_player_2 += 1500
                     else:
                         coords = check_click(event.pos[0], event.pos[1], background)
                         for city in range(len(cities_list)):
                             if cities_list[city].x == coords[0] and cities_list[city].y == coords[1]:
-                                cities_list[city] = run_cosher_city(cities_list[city])
-                    # print(event.pos)
+                                if cities_list[city].city_type == 'cosher':
+                                    cities_list[city] = run_cosher_city(cities_list[city])
+                    print(event.pos)
 
 
 

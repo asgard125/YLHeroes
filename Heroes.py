@@ -15,7 +15,7 @@ class Hero:
         self.x = x
         self.y = y
 
-        # Набор иконок. 2 - в городе, 3 - справа, в менюшке быстрого доступа
+        # Набор иконок. 1 - на карте, 2 - в городе, 3 - справа, в менюшке быстрого доступа
         self.icon = icon
         self.city_icon = city_icon
         self.mini_icon = mini_icon
