@@ -37,3 +37,4 @@ ex = MyWidget()
 ex.setFixedSize(851, 738)
 ex.show()
 sys.exit(app.exec_())
+
