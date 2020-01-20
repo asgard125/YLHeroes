@@ -15,7 +15,7 @@ class Hero:
         self.x = x
         self.y = y
 
-        # Набор иконок. 2 - в городе, 3 - справа, в менюшке быстрого доступа
+        # Набор иконок. 1 - на карте, 2 - в городе, 3 - справа, в менюшке быстрого доступа
         self.icon = icon
         self.city_icon = city_icon
         self.mini_icon = mini_icon
@@ -47,7 +47,7 @@ class Orrin(Hero):
                          load_sprite('data\HEROES_ICONS\Hero_icon_orrin_mini'),
                          load_sprite('data\HEROES_ICONS\Hero_icon_orrin_city'),
                          load_sprite('data\HEROES_APPEARANCE\Knight_icon', 1),
-                         1, 4, [SpearMan(10), Archer(6), '', '', ''], 8)
+                         1, 4, [SpearMan(10), Archer(6), '', '', ''], 800)
 
 
 class Zuldan(Hero):
@@ -56,7 +56,15 @@ class Zuldan(Hero):
                          load_sprite('data\HEROES_ICONS\Hero_icon_zuldan_city', 0),
                          load_sprite('data\HEROES_ICONS\Hero_icon_zuldan_mini', 0),
                          load_sprite('data\HEROES_APPEARANCE\Skeleton_icon', 1),
-                         2, 1, [Skeleton(12), Zombie(2), '', '', ''], 14)
+                         2, 1, [Skeleton(12), '', '', '', ''], 1000)
+
+class Gardon(Hero):
+    def __init__(self, x, y):
+        super().__init__(x, y, 'Гардъон', load_sprite('data\HEROES_ICONS\Hero_icon_gardon'),
+              load_sprite('data\HEROES_ICONS\Hero_icon_gardon_mini'),
+              load_sprite('data\HEROES_ICONS\Hero_icon_gardon_city'),
+              load_sprite('data\HEROES_APPEARANCE\Knight_icon', 1),
+              1, 4, [SpearMan(18), Archer(4), '', '', ''], 890)
 
 
 
