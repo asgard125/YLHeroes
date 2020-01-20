@@ -9,7 +9,7 @@ width = 1200
 height = 1000
 screen = pygame.display.set_mode((width, height))
 
-pygame.display.set_caption('Город нежити')
+
 
 def check_unit(unit):
     if unit.name == Skeleton(unit.count).name:
@@ -72,6 +72,8 @@ class City:
             self.able_spearman = 12
             self.able_archer = 10
             self.able_cavalryman = 4
+
+        self.city_type = city_type
 
     def draw_buy_unit_window(self, unit, able, back_ground):
         screen.blit(self.buy_unit_surf, (164, 143))
@@ -208,10 +210,10 @@ class City:
 
 
 class CosherCity(City):
-    def __init__(self, name, x, y, tavern, level, wall,
-                 skeleton, zombie, leach,
-                 horseman_of_the_apocalypse,
-                 necromancer, garrison, entered_hero):
+    def __init__(self, name, x, y, garrison, entered_hero, tavern=0, level=3, wall=3,
+                 skeleton=2, zombie=2, leach=2,
+                 horseman_of_the_apocalypse=0,
+                 necromancer=0):
 
         super().__init__(name, 'cosher', garrison, entered_hero)
 
@@ -288,11 +290,11 @@ class CosherCity(City):
 
 
 
-def run_cosher_city(name, x, y, garrisonn, entered_hero, t=0, w=3, s=2, z=2, l=2, h=0, n=0):
+def run_cosher_city(city):
     pygame.init()
-    city = CosherCity(name=name, x=x, y=y, tavern=t, level=l, wall=w, skeleton=s,
-                      zombie=z, leach=l, horseman_of_the_apocalypse=h,
-                      necromancer=n, garrison=garrisonn, entered_hero =entered_hero)
+    city = CosherCity(name=city.name, x=city.x, y=city.y, tavern=city.tavern, level=city.level, wall=city.wall, skeleton=city.skeleton,
+                      zombie=city.zombie, leach=city.leach, horseman_of_the_apocalypse=city.horseman_of_the_apocalypse,
+                      necromancer=city.necromancer, garrison=city.garrison, entered_hero =city.entered_hero)
     run = 1
     while run:
 
@@ -481,8 +483,8 @@ def run_cosher_city(name, x, y, garrisonn, entered_hero, t=0, w=3, s=2, z=2, l=2
                     if city.active == city.buy_unit or city.active == city.buy_hero:    # or city.active == city.upgrade_city
                         city.active = city.panorama
                     elif city.active == city.panorama:
-                        print("Нот энд'")  # <---------------------------------------------------------------------------------Заглушка
-
+                        run = 0
+                        return city  # <---------------------------------------------------------------------------------Заглушка
 
 
 

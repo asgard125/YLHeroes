@@ -300,3 +300,4 @@ def run_mapgenerator():
         clock.tick(25)
 
     pg.quit()
+run_mapgenerator()
