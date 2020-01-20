@@ -31,15 +31,18 @@ class PgButton:
 
 
 class GameObject(pg.sprite.Sprite):  # класс спрайтов
-    def __init__(self, cords, pos, img, txt_char):
+    def __init__(self, cords, pos, name=None, image=None, obj_type=None, placeable=None, txt_char=None):
         super().__init__()
         self.pos = pos
-        self.image = pg.transform.scale(load_image(img), (30, 30))
+        self.image = pg.transform.scale(load_image(image), (30, 30))
         self.rect = self.image.get_rect()
         self.rect.x = cords[0]
         self.rect.y = cords[1]
         self.txt_char = txt_char
-        self.img_name = img
+        self.obj_type = obj_type
+        self.name = name
+        self.placeable = placeable
+        self.img_name = image
 
 
 class Board:
@@ -49,7 +52,8 @@ class Board:
         self.background_board = [[GameObject((
             i * 30 + (1280 - 30 * 16) // 2, j * 30 + 10),
             (j, i),
-            'grass.png', '0') for i in range(width)] for j in range(height)]
+            **{'name': 'Grass', 'image': 'grass.png', "obj_type": 'background', 'placeable': True, 'txt_char': '0'}) for
+            i in range(width)] for j in range(height)]
         self.txt_primary_map = [['*'] * width for _ in range(height)]
         self.txt_background_map = [['0'] * width for _ in range(height)]
         # координаты и размер доски в данный момент
@@ -67,22 +71,21 @@ class Board:
         self.all_objects_cursor = 0
         # формат: [Название объекта, изображение, тип, обозначение для текстового файла]
         self.all_objects = [
-            ('Road', 'road.jpg', 'background', '1'),
-            ('Water', 'water.png', 'background', '2'),
-            ('Grass', 'grass.png', 'background', '0'),
-            ('Forest', 'forest.png', 'background', '3'),
-            ('Necropolis', 'necropolis.png', 'primary', '2'),
-            ('Gold', 'gold.png', 'primary', '1'),
-            ('Player 1', 'player1.png', 'spawnpoint', 'q'),
-            ('Player 2', 'player2.png', 'spawnpoint', 'w'),
+            {'name': 'Road', 'image': 'road.jpg', "obj_type": 'background', 'placeable': True, 'txt_char': '1'},
+            {'name': 'Water', 'image': 'water.png', "obj_type": 'background', 'placeable': False, 'txt_char': '2'},
+            {'name': 'Grass', 'image': 'grass.png', "obj_type": 'background', 'placeable': True, 'txt_char': '0'},
+            {'name': 'Forest', 'image': 'forest.png', "obj_type": 'background', 'placeable': False, 'txt_char': '3'},
+            {'name': 'Necropolis', 'image': 'necropolis.png', "obj_type": 'primary', 'placeable': False,
+             'txt_char': '2'},
+            {'name': 'Gold', 'image': 'gold.png', "obj_type": 'primary', 'placeable': False, 'txt_char': '1'},
+            {'name': 'Player 1', 'image': 'player1.png', "obj_type": 'spawnpoint', 'placeable': False, 'txt_char': 'q'},
+            {'name': 'Player 2', 'image': 'player2.png', "obj_type": 'spawnpoint', 'placeable': False, 'txt_char': 'w'},
         ]
         # кнопки
         self.buttonup = PgButton((self.LEFT + 16 * self.CELL_SIZE + 70, 160), (60, 20), load_image('arrowbtnup.jpg'))
         self.buttondown = PgButton((self.LEFT + 16 * self.CELL_SIZE + 70, 280), (60, 20),
                                    load_image('arrowbtndown.jpg'))
         self.savebutton = PgButton((self.LEFT + 16 * self.CELL_SIZE + 60, 500), (80, 40), load_image('savebutton.jpg'))
-        self.minimap = None
-        self.pilimages = {}
 
     def render_interface(self, surface):
         f = pg.font.Font(None, 18)
@@ -91,9 +94,10 @@ class Board:
         # отрисовка кнопок и элементов для взаимодействия
         pg.draw.rect(surface, (0, 0, 0), (self.LEFT + 16 * self.CELL_SIZE + 70, 200,
                                           60, 60))  # черный прямоугольник-рамка для объекта
-        img = pg.transform.scale(load_image(self.all_objects[self.all_objects_cursor][1]), (60, 60))  # объект из списка
-        name = f.render(f"name: {self.all_objects[self.all_objects_cursor][0]}", 1, (0, 0, 0))
-        type = f.render(f"type: {self.all_objects[self.all_objects_cursor][2]}", 1, (0, 0, 0))
+        img = pg.transform.scale(load_image(self.all_objects[self.all_objects_cursor]['image']),
+                                 (60, 60))  # объект из списка
+        name = f.render(f"name: {self.all_objects[self.all_objects_cursor]['name']}", 1, (0, 0, 0))
+        type = f.render(f"type: {self.all_objects[self.all_objects_cursor]['obj_type']}", 1, (0, 0, 0))
         surface.blit(img, (self.LEFT + 16 * self.CELL_SIZE + 70, 200))
         surface.blit(name, (self.LEFT + 16 * self.CELL_SIZE + 60, 185))
         surface.blit(type, (self.LEFT + 16 * self.CELL_SIZE + 60, 265))
@@ -142,33 +146,36 @@ class Board:
 
     def add_object(self, cell):
         if cell is not None:
-            if self.all_objects[self.all_objects_cursor][2] == 'primary':
-                self.primary_board[cell[0]][cell[1]] = GameObject(
-                    ((cell[1]) * 30 + self.LEFT, (cell[0]) * 30 + self.TOP),
-                    (cell[0], cell[1]),
-                    self.all_objects[self.all_objects_cursor][1], self.all_objects[self.all_objects_cursor][-1])
-                self.txt_primary_map[cell[0]][cell[1]] = self.all_objects[self.all_objects_cursor][-1]
-            elif self.all_objects[self.all_objects_cursor][2] == 'background':
-                self.background_board[cell[0]][cell[1]] = GameObject((
-                    cell[1] * 30 + self.LEFT, cell[0] * 30 + self.TOP),
-                    (cell[0], cell[1]),
-                    self.all_objects[self.all_objects_cursor][1], self.all_objects[self.all_objects_cursor][-1])
-                self.txt_background_map[cell[0]][cell[1]] = self.all_objects[self.all_objects_cursor][-1]
-            elif self.all_objects[self.all_objects_cursor][2] == 'spawnpoint':
-                if (self.background_board[cell[0]][cell[1]].txt_char in ['0', '1'] and
+            if self.all_objects[self.all_objects_cursor]['obj_type'] == 'primary':
+                if self.background_board[cell[0]][cell[1]].placeable:
+                    self.primary_board[cell[0]][cell[1]] = GameObject(
+                        ((cell[1]) * 30 + self.LEFT, (cell[0]) * 30 + self.TOP),
+                        (cell[0], cell[1]),
+                        **self.all_objects[self.all_objects_cursor])
+                self.txt_primary_map[cell[0]][cell[1]] = self.all_objects[self.all_objects_cursor]['txt_char']
+            elif self.all_objects[self.all_objects_cursor]['obj_type'] == 'background':
+                if (self.all_objects[self.all_objects_cursor]['placeable'] or
+                        self.primary_board[cell[0]][cell[1]] == '*'):
+                    self.background_board[cell[0]][cell[1]] = GameObject((
+                        cell[1] * 30 + self.LEFT, cell[0] * 30 + self.TOP),
+                        (cell[0], cell[1]),
+                        **self.all_objects[self.all_objects_cursor])
+                self.txt_background_map[cell[0]][cell[1]] = self.all_objects[self.all_objects_cursor]['txt_char']
+            elif self.all_objects[self.all_objects_cursor]['obj_type'] == 'spawnpoint':
+                if (self.background_board[cell[0]][cell[1]].placeable and
                         self.primary_board[cell[0]][cell[1]] == '*'):
                     for i in range(self.height):
                         for j in range(self.width):
                             if self.primary_board[i][j] != '*':
-                                if self.primary_board[i][j].txt_char == self.all_objects[self.all_objects_cursor][-1]:
+                                if (self.primary_board[i][j].txt_char == self.all_objects[self.all_objects_cursor][
+                                    'txt_char']):
                                     self.primary_board[i][j] = '*'
                                     self.txt_primary_map[i][j] = '*'
                     self.primary_board[cell[0]][cell[1]] = GameObject(
                         ((cell[1]) * 30 + self.LEFT, (cell[0]) * 30 + self.TOP),
                         (cell[0], cell[1]),
-                        self.all_objects[self.all_objects_cursor][1], self.all_objects[self.all_objects_cursor][-1])
-                    self.txt_primary_map[cell[0]][cell[1]] = self.all_objects[self.all_objects_cursor][-1]
-        self.minimap_changed()
+                        **self.all_objects[self.all_objects_cursor])
+                    self.txt_primary_map[cell[0]][cell[1]] = self.all_objects[self.all_objects_cursor]['txt_char']
 
     def del_object(self, pos):
         cell = self.get_cell(pos)
@@ -177,7 +184,6 @@ class Board:
                 i.kill()
                 self.primary_board[cell[0]][cell[1]] = '*'
                 self.txt_primary_map[cell[0]][cell[1]] = '*'
-        self.minimap_changed()
 
     def get_cell(self, pos):
         x, y = pos
@@ -240,23 +246,7 @@ class Board:
             self.root.destroy()
 
     def draw_minimap(self, surf):
-        surf.blit(self.minimap, (self.LEFT + 16 * self.CELL_SIZE + 15, self.TOP))
-        pg.draw.rect(surf, pg.Color('Red'),
-                     (self.LEFT + 16 * self.CELL_SIZE + 10 * self.board_col + 15, self.TOP + 10 * self.board_row, 160, 160),
-                     1)
-
-    def minimap_changed(self):
-        fon = Image.new("RGBA", (self.height * 10, self.width * 10), (0, 0, 0))
-        for i in range(self.height):
-            for j in range(self.width):
-                bpic = self.pilimages[self.background_board[i][j].img_name]
-                bpic = bpic.resize((10, 10))
-                fon.paste(bpic, (j * 10, i * 10), bpic)
-                if self.primary_board[i][j] != '*':
-                    ppic = self.pilimages[self.primary_board[i][j].img_name]
-                    ppic = ppic.resize((10, 10))
-                    fon.paste(ppic, (j * 10, i * 10), ppic)
-        self.minimap = pg.image.fromstring(fon.tobytes(), fon.size, fon.mode)
+        pass
 
 
 def run_mapgenerator():
@@ -265,10 +255,6 @@ def run_mapgenerator():
     screen = pg.display.set_mode(size)
     clock = pg.time.Clock()
     board = Board(32, 32)
-    for i in board.all_objects:
-        im = Image.open(f"generatorFiles/{i[1]}")
-        board.pilimages[i[1]] = im.convert("RGBA")
-    board.minimap_changed()
     board.render_interface(screen)
     pg.display.flip()
     running = True
