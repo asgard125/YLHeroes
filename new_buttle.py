@@ -80,7 +80,7 @@ class Board:
 class Mob(pygame.sprite.Sprite):
     def __init__(self, starting_position, coin=10):
         super().__init__()
-        self.font = pygame.font.SysFont(None, 36)
+        self.font = pygame.font.SysFont(None, 30)
         self.coin = coin
         self.starting_position = starting_position
         self.place = starting_position
@@ -91,7 +91,7 @@ class Mob(pygame.sprite.Sprite):
         self.img = 'Skeleton.gif'
         self.kl_img = load_image(self.img, -1).convert()
         self.kl_img = pygame.transform.rotate(self.kl_img, 0)
-        self.kl_img = pygame.transform.scale(self.kl_img, (65, 65))
+        self.kl_img = pygame.transform.scale(self.kl_img, (50, 50))
         self.speed = 20
         self.speed_i = 20
         self.hp = 10
@@ -134,7 +134,7 @@ class Mob(pygame.sprite.Sprite):
             pygame.time.wait(15)
         self.mob_gr.draw(win)
         text_coin = self.font.render(f'{self.coin}', 1, (180, 0, 0))
-        win.blit(text_coin, (self.kl.rect.x + 30, self.kl.rect.y + 45))
+        win.blit(text_coin, (self.kl.rect.x + 20, self.kl.rect.y + 40))
 
         if self.speed == 0:
             self.destination = self.place
@@ -183,6 +183,7 @@ class Connicks(Mob):
         self.hp_now = self.hp
         self.attaka = 15
         self.overall_hp = self.hp * self.coin
+        self.long_range_attack = False
 
 
 class Archers(Mob):
@@ -193,7 +194,7 @@ class Archers(Mob):
         self.img = 'Archer.gif'
         self.kl_img = load_image(self.img, -1).convert()
         self.kl_img = pygame.transform.rotate(self.kl_img, 0)
-        self.kl_img = pygame.transform.scale(self.kl_img, (65, 65))
+        self.kl_img = pygame.transform.scale(self.kl_img, (50, 50))
         self.speed = 5
         self.speed_i = 5
         self.hp = 15
@@ -211,13 +212,14 @@ class Skeletons(Mob):
         self.img = 'Skeleton.gif'
         self.kl_img = load_image(self.img, -1).convert()
         self.kl_img = pygame.transform.rotate(self.kl_img, 0)
-        self.kl_img = pygame.transform.scale(self.kl_img, (65, 65))
+        self.kl_img = pygame.transform.scale(self.kl_img, (60, 60))
         self.speed = 4
         self.speed_i = 4
         self.hp = 40
         self.hp_now = self.hp
         self.attaka = 1
         self.overall_hp = self.hp * self.coin
+        self.long_range_attack = False
 
 
 class Spears(Mob):
@@ -228,13 +230,14 @@ class Spears(Mob):
         self.img = 'Spearman.gif'
         self.kl_img = load_image(self.img, -1).convert()
         self.kl_img = pygame.transform.rotate(self.kl_img, 0)
-        self.kl_img = pygame.transform.scale(self.kl_img, (65, 65))
+        self.kl_img = pygame.transform.scale(self.kl_img, (50, 50))
         self.speed = 6
         self.speed_i = 6
         self.hp = 15
         self.hp_now = self.hp
         self.attaka = 4
         self.overall_hp = self.hp * self.coin
+        self.long_range_attack = False
 
 
 class Zombie(Mob):
@@ -245,13 +248,14 @@ class Zombie(Mob):
         self.img = 'Zombi.gif'
         self.kl_img = load_image(self.img, -1).convert()
         self.kl_img = pygame.transform.rotate(self.kl_img, 0)
-        self.kl_img = pygame.transform.scale(self.kl_img, (65, 65))
+        self.kl_img = pygame.transform.scale(self.kl_img, (50, 50))
         self.speed = 4
         self.speed_i = 4
         self.hp = 70
         self.hp_now = self.hp
         self.attaka = 3
         self.overall_hp = self.hp * self.coin
+        self.long_range_attack = False
 
 
 class Lychee(Mob):
@@ -262,7 +266,7 @@ class Lychee(Mob):
         self.img = 'Leach.gif'
         self.kl_img = load_image(self.img, -1).convert()
         self.kl_img = pygame.transform.rotate(self.kl_img, 0)
-        self.kl_img = pygame.transform.scale(self.kl_img, (65, 65))
+        self.kl_img = pygame.transform.scale(self.kl_img, (60, 60))
         self.speed = 5
         self.speed_i = 5
         self.hp = 30
@@ -376,25 +380,37 @@ class Motion:
                         pos[0] += 1
                     elif mob.place[0] < m.kindness[n].place[0]:
                         pos[0] -= 1
-                    while not W:
-                        self.render_field()
-                        self.render()
-                        m.render()
-                        board.render()
-                        pygame.display.flip()
-                        W = mob.place_render(pos)
-                        if W:
-                            flag_kil = False
-                            if pos == mob.place:
-                                flag_kil = m.kindness[n].viability(mob.brunt())
-                            if flag_kil:
-                                del m.kindness[n]
-                                if len(m.kindness) == 0:
-                                    self.run = False
-                                m.pos()
-                            self.motin += 1
-                            self.pos()
-                            return 2
+                    if mob.long_range_attack:
+                        flag_kil = False
+                        flag_kil = m.kindness[n].viability(mob.brunt())
+                        if flag_kil:
+                            del m.kindness[n]
+                            if len(m.kindness) == 0:
+                                self.run = False
+                            m.pos()
+                        self.motin += 1
+                        self.pos()
+                        return 2
+                    else:
+                        while not W:
+                            self.render_field()
+                            self.render()
+                            m.render()
+                            board.render()
+                            pygame.display.flip()
+                            W = mob.place_render(pos)
+                            if W:
+                                flag_kil = False
+                                if pos == mob.place:
+                                    flag_kil = m.kindness[n].viability(mob.brunt())
+                                if flag_kil:
+                                    del m.kindness[n]
+                                    if len(m.kindness) == 0:
+                                        self.run = False
+                                    m.pos()
+                                self.motin += 1
+                                self.pos()
+                                return 2
 
     def move_ol(self, event, board, m):
         if self.motin == len(self.kindness):
@@ -429,8 +445,7 @@ class Motion:
 
 class Main:
     def __init__(self, W1, Z1):
-        introduction = pygame.mixer.music.load(f'data/MUSIC/introduction_battle.mp3')
-        print(introduction)
+        pygame.mixer.music.load(f'data/MUSIC/introduction_battle.mp3')
         pygame.mixer.music.play()
         m1 = Motion(W1, True)
         m2 = Motion(Z1, False)
@@ -469,4 +484,4 @@ class Main:
             pygame.display.flip()
 
 
-m = Main([["Скелеты", 17], ["Конники", 35], ["Лучники", 35], ["Личи", 35]], [["Скелеты", 17]])
+m = Main([["Скелеты", 17], ["Конники", 35], ["Лучники", 35], ["Личи", 35]], [["Скелеты", 17], ["Личи", 100]])
