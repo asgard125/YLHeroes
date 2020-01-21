@@ -6,6 +6,7 @@ from Heroes import *
 
 
 
+
 def check_unit(unit):
     if unit.name == Skeleton(unit.count).name:
         return Skeleton(unit.count)
@@ -48,7 +49,6 @@ class City:
         # 2 героя, доступных для покупки в таверне
         # self.hero1 = hero1
         # self.hero2 = hero2
-
         # Гарнизон города
         # self.hero_in_garrison = hero_in_city
         self.garrison = garrison
