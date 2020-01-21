@@ -7,11 +7,7 @@ from UnitTypes import *
 pg.init()
 pygame.font.init()
 
-size = width_, height_ = 1200, 750
-win = pygame.display.set_mode(size)
-
 color = (255, 255, 255)
-
 
 def load_image(name, colorkey=None):
     fullname = os.path.join(f"data/UNIT_IMG_BITTLE", name)
