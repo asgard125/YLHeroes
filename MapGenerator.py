@@ -31,7 +31,8 @@ class PgButton:
 
 
 class GameObject(pg.sprite.Sprite):  # класс спрайтов
-    def __init__(self, cords, pos, name=None, image=None, obj_type=None, placeable=None, txt_char=None):
+    def __init__(self, cords, pos, name=None, image=None, obj_type=None, placeable=None, txt_char=None,
+                 minimap_color=None):
         super().__init__()
         self.pos = pos
         self.image = pg.transform.scale(load_image(image), (30, 30))
@@ -43,6 +44,7 @@ class GameObject(pg.sprite.Sprite):  # класс спрайтов
         self.name = name
         self.placeable = placeable
         self.img_name = image
+        self.minimap_color = minimap_color
 
 
 class Board:
@@ -52,7 +54,8 @@ class Board:
         self.background_board = [[GameObject((
             i * 30 + (1280 - 30 * 16) // 2, j * 30 + 10),
             (j, i),
-            **{'name': 'Grass', 'image': 'grass.png', "obj_type": 'background', 'placeable': True, 'txt_char': '0'}) for
+            **{'name': 'Grass', 'image': 'grass.png', "obj_type": 'background', 'placeable': True, 'txt_char': '0',
+               'minimap_color': (0, 255, 0)}) for
             i in range(width)] for j in range(height)]
         self.txt_primary_map = [['*'] * width for _ in range(height)]
         self.txt_background_map = [['0'] * width for _ in range(height)]
@@ -71,19 +74,26 @@ class Board:
         self.all_objects_cursor = 0
         # формат: [Название объекта, изображение, тип, обозначение для текстового файла]
         self.all_objects = [
-            {'name': 'Road', 'image': 'road.jpg', "obj_type": 'background', 'placeable': True, 'txt_char': '1'},
-            {'name': 'Water', 'image': 'water.png', "obj_type": 'background', 'placeable': False, 'txt_char': '2'},
-            {'name': 'Grass', 'image': 'grass.png', "obj_type": 'background', 'placeable': True, 'txt_char': '0'},
-            {'name': 'Forest', 'image': 'forest.png', "obj_type": 'background', 'placeable': False, 'txt_char': '3'},
+            {'name': 'Road', 'image': 'road.jpg', "obj_type": 'background', 'placeable': True, 'txt_char': '1',
+             'minimap_color': (120, 120, 120)},
+            {'name': 'Water', 'image': 'water.png', "obj_type": 'background', 'placeable': False, 'txt_char': '2',
+             'minimap_color': (0, 0, 255)},
+            {'name': 'Grass', 'image': 'grass.png', "obj_type": 'background', 'placeable': True, 'txt_char': '0',
+             'minimap_color': (0, 255, 0)},
+            {'name': 'Forest', 'image': 'forest.png', "obj_type": 'background', 'placeable': False, 'txt_char': '3',
+             'minimap_color': (1, 50, 32)},
             {'name': 'Necropolis', 'image': 'necropolis.png', "obj_type": 'primary', 'placeable': False,
-             'txt_char': '2'},
-            {'name': 'Gold', 'image': 'gold.png', "obj_type": 'primary', 'placeable': False, 'txt_char': '1'},
-            {'name': 'Player 1', 'image': 'player1.png', "obj_type": 'spawnpoint', 'placeable': False, 'txt_char': 'q'},
-            {'name': 'Player 2', 'image': 'player2.png', "obj_type": 'spawnpoint', 'placeable': False, 'txt_char': 'w'},
+             'txt_char': '2', 'minimap_color': (255, 0, 0)},
+            {'name': 'Gold', 'image': 'gold.png', "obj_type": 'primary', 'placeable': False, 'txt_char': '1',
+             'minimap_color': (255, 255, 0)},
+            {'name': 'Player 1', 'image': 'player1.png', "obj_type": 'spawnpoint', 'placeable': False, 'txt_char': 'q',
+             'minimap_color': (139, 0, 255)},
+            {'name': 'Player 2', 'image': 'player2.png', "obj_type": 'spawnpoint', 'placeable': False, 'txt_char': 'w',
+             'minimap_color': (139, 0, 255)},
         ]
         # кнопки
-        self.buttonup = PgButton((self.LEFT + 16 * self.CELL_SIZE + 70, 160), (60, 20), load_image('arrowbtnup.jpg'))
-        self.buttondown = PgButton((self.LEFT + 16 * self.CELL_SIZE + 70, 280), (60, 20),
+        self.buttonup = PgButton((self.LEFT + 16 * self.CELL_SIZE + 70, 260), (60, 20), load_image('arrowbtnup.jpg'))
+        self.buttondown = PgButton((self.LEFT + 16 * self.CELL_SIZE + 70, 380), (60, 20),
                                    load_image('arrowbtndown.jpg'))
         self.savebutton = PgButton((self.LEFT + 16 * self.CELL_SIZE + 60, 500), (80, 40), load_image('savebutton.jpg'))
 
@@ -92,15 +102,15 @@ class Board:
         # загрузка фонового изображения
         surface.blit(load_image('MapGeneratorInterface.jpg'), (0, 0))
         # отрисовка кнопок и элементов для взаимодействия
-        pg.draw.rect(surface, (0, 0, 0), (self.LEFT + 16 * self.CELL_SIZE + 70, 200,
+        pg.draw.rect(surface, (0, 0, 0), (self.LEFT + 16 * self.CELL_SIZE + 70, 300,
                                           60, 60))  # черный прямоугольник-рамка для объекта
         img = pg.transform.scale(load_image(self.all_objects[self.all_objects_cursor]['image']),
                                  (60, 60))  # объект из списка
         name = f.render(f"name: {self.all_objects[self.all_objects_cursor]['name']}", 1, (0, 0, 0))
         type = f.render(f"type: {self.all_objects[self.all_objects_cursor]['obj_type']}", 1, (0, 0, 0))
-        surface.blit(img, (self.LEFT + 16 * self.CELL_SIZE + 70, 200))
-        surface.blit(name, (self.LEFT + 16 * self.CELL_SIZE + 60, 185))
-        surface.blit(type, (self.LEFT + 16 * self.CELL_SIZE + 60, 265))
+        surface.blit(img, (self.LEFT + 16 * self.CELL_SIZE + 70, 300))
+        surface.blit(name, (self.LEFT + 16 * self.CELL_SIZE + 60, 285))
+        surface.blit(type, (self.LEFT + 16 * self.CELL_SIZE + 60, 365))
         # текст разный
         info = f.render('WASD - перемещение по карте', 1, (0, 0, 0))
         info1 = f.render('ПКМ - удалить primary объект', 1, (0, 0, 0))
@@ -246,7 +256,21 @@ class Board:
             self.root.destroy()
 
     def draw_minimap(self, surf):
-        pass
+        top = self.TOP
+        left = self.LEFT + 16 * self.CELL_SIZE + 15
+        step = 200 // 32
+        for i in range(self.height):
+            for j in range(self.width):
+                print(self.background_board[i][j].minimap_color)
+                pg.draw.rect(surf, self.background_board[i][j].minimap_color,
+                             (left + step * j, top + step * i, step, step))
+                if self.primary_board[i][j] != '*':
+                    pg.draw.rect(surf, self.primary_board[i][j].minimap_color,
+                                 (left + step * j, top + step * i, step // 2, step // 2))
+        pg.draw.rect(surf, pg.Color('Red'),
+                     (left + step * self.board_col, top + step * self.board_row, step * 16,
+                      step * 16),
+                     1)
 
 
 def run_mapgenerator():
@@ -286,4 +310,3 @@ def run_mapgenerator():
         clock.tick(25)
 
     pg.quit()
-run_mapgenerator()

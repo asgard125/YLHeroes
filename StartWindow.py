@@ -2,6 +2,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5 import uic
 from MapGenerator import run_mapgenerator
+from SrategicView import run_map
 from PyQt5.QtWidgets import QInputDialog
 
 
@@ -22,7 +23,7 @@ class MyWidget(QMainWindow):
                                                   maplist,
                                                   1, False)
         if OkPressed:
-            pass
+           run_map(mapname)
 
     def run_mapgenerator(self):
         run_mapgenerator()
@@ -36,3 +37,4 @@ ex = MyWidget()
 ex.setFixedSize(851, 738)
 ex.show()
 sys.exit(app.exec_())
+
