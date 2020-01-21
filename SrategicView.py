@@ -4,6 +4,7 @@ from CosherCity import *
 from random import choice, randint
 from Heroes import *
 import os
+from new_buttle import Main
 
 global gold_player_1, gold_player_2, turn_player_1, turn_player_2, hero_player_1, hero_player_2, status, month, week, day
 
@@ -29,12 +30,16 @@ def load_image(name, direct=None, colorkey=None):
 #  Загрузить уровень
 def load_level(name):
     maps = os.listdir(path="maps")
+    print(name)
+    print(maps)
     if name + '_background.txt' in maps and name + '_image.png' in maps and name + '_primary.txt' in maps:
+        print('pre-fin')
         with open('maps/' + name + '_background.txt', 'r') as file:
             passive_objects = [line.strip() for line in file]
         with open('maps/' + name + '_primary.txt', 'r') as file1:
             active_objects = [list(i) for i in [line.strip() for line in file1]]
         background_image = load_image(name + '_image.png', 'load_level')
+        print('fin')
         return active_objects, passive_objects, background_image
 
 
@@ -187,8 +192,9 @@ def run_map(name):
                                     cities_list[c], gold_player_1, gold_player_2, status, turn_player_1, turn_player_2 = run_cosher_city(cities_list[c], screen, gold_player_1, gold_player_2, status, turn_player_1, turn_player_2)
                                     break
                     elif hero_player_1.hero.x == hero_player_2.hero.x and hero_player_1.hero.y == hero_player_2.hero.y:
-                        print(
-                            'start battle here')  # --------------------------------------------------------------------батя и сын снова сцепились по пьяне
+                        print(hero_player_1.hero.army)
+                        print(hero_player_2.hero.army)
+                        m = Main(hero_player_1.hero.army,  hero_player_2.hero.army, turn_player_1, turn_player_2, status)
 
     # Настройки карты. Актив, пассив и фон
     active_objects, passive_objects, background_img = load_level(name)
