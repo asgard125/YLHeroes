@@ -24,13 +24,14 @@ def check_unit(unit):
 
 # хранит параметры, для отрисовки окон и окошек
 class City:
-    def __init__(self, name, city_type, garrison, entered_hero):
+    def __init__(self, name, city_type, garrison, entered_hero, week):
         # Разные статусы, благодаря которым происходит отрисовка
         self.panorama = 0
         self.buy_unit = 1
         self.buy_hero = 2
         self.army_interact = 3
         self.unit = None  # Заглушка
+        self.week = week
 
         self.name = name
 
@@ -81,7 +82,7 @@ class City:
     def draw_buy_unit_text(self, name, price, c, able_to_buy, screen):
         fonts = pygame.font.Font(None, 40)
         screen.blit(fonts.render('Нанять: ' + name, 3, (255, 255, 255)), (460, 182))
-        screen.blit(fonts.render(str(price), 2, (255, 255, 255)), (350, 650))
+        screen.blit(fonts.render(str(price * self.week), 2, (255, 255, 255)), (350, 650))
         screen.blit(fonts.render(str(able_to_buy - c), 1, (255, 255, 255)), (501, 585))
         screen.blit(fonts.render(str(c), 1, (255, 255, 255)), (646, 590))
         screen.blit(fonts.render(str(price * c), 1, (255, 255, 255)), (810, 649))
@@ -206,12 +207,12 @@ class City:
 
 
 class CosherCity(City):
-    def __init__(self, name, x, y, garrison, entered_hero, tavern=0, level=3, wall=3,
+    def __init__(self, name, x, y, garrison, entered_hero, week, tavern=0, level=3, wall=3,
                  skeleton=2, zombie=2, leach=2,
                  horseman_of_the_apocalypse=0,
                  necromancer=0):
 
-        super().__init__(name, 'cosher', garrison, entered_hero)
+        super().__init__(name, 'cosher', garrison, entered_hero, week)
 
         # Количество юнитов доступных для покупки сейчас
 
@@ -284,14 +285,14 @@ class CosherCity(City):
             screen.blit(self.necromancer_surf, (800, 370))
 
 
-def run_cosher_city(city, screen, gold_player_1, gold_player_2, status, turn_player_1, turn_player_2):
+def run_cosher_city(city, screen, gold_player_1, gold_player_2, status, turn_player_1, turn_player_2, week):
     pygame.init()
     try:
 
         city = CosherCity(name=city.name, x=city.x, y=city.y, tavern=city.tavern, level=city.level, wall=city.wall,
                           skeleton=city.skeleton,
                           zombie=city.zombie, leach=city.leach, horseman_of_the_apocalypse=city.horseman_of_the_apocalypse,
-                          necromancer=city.necromancer, garrison=city.garrison, entered_hero=city.entered_hero)
+                          necromancer=city.necromancer, garrison=city.garrison, entered_hero=city.entered_hero, week=week)
         run = 1
         while run:
 
@@ -447,13 +448,12 @@ def run_cosher_city(city, screen, gold_player_1, gold_player_2, status, turn_pla
                                     if '' in city.garrison:
                                         check_enough_gold = False
                                         if status == turn_player_1:
-                                            if city.count * city.unit.price < gold_player_1:
+                                            if city.count * city.unit.price * city.week < gold_player_1:
                                                 check_enough_gold = True
-                                                gold_player_1 -= city.count * city.unit.price
-                                                print('Оно дошло до золота')
+                                                gold_player_1 -= city.count * city.unit.price * city.week
                                         elif status == turn_player_2:
-                                            if city.count * city.unit.price < gold_player_2:
-                                                gold_player_2 -= city.count * city.unit.price
+                                            if city.count * city.unit.price * city.week < gold_player_2:
+                                                gold_player_2 -= city.count * city.unit.price * city.week
                                                 check_enough_gold = True
                                         if check_enough_gold:
                                             for i in range(len(city.garrison)):

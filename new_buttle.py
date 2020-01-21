@@ -3,15 +3,11 @@ import pygame as pg
 import random
 import os
 import math
-
+from UnitTypes import *
 pg.init()
 pygame.font.init()
 
-size = width_, height_ = 1200, 750
-win = pygame.display.set_mode(size)
-
 color = (255, 255, 255)
-
 
 def load_image(name, colorkey=None):
     fullname = os.path.join(f"data/UNIT_IMG_BITTLE", name)
@@ -197,7 +193,7 @@ class Archers(Mob):
         self.kl_img = pygame.transform.scale(self.kl_img, (50, 50))
         self.speed = 5
         self.speed_i = 5
-        self.hp = 15
+        self.hp = 10
         self.hp_now = self.hp
         self.attaka = 7
         self.overall_hp = self.hp * self.coin
@@ -215,9 +211,9 @@ class Skeletons(Mob):
         self.kl_img = pygame.transform.scale(self.kl_img, (60, 60))
         self.speed = 4
         self.speed_i = 4
-        self.hp = 40
+        self.hp = 10
         self.hp_now = self.hp
-        self.attaka = 1
+        self.attaka = 5
         self.overall_hp = self.hp * self.coin
         self.long_range_attack = False
 
@@ -271,7 +267,7 @@ class Lychee(Mob):
         self.speed_i = 5
         self.hp = 30
         self.hp_now = self.hp
-        self.attaka = 4
+        self.attaka = 15
         self.overall_hp = self.hp * self.coin
         self.long_range_attack = True
 
@@ -282,6 +278,9 @@ class Motion:
         self.motin = 0
         self.run = True
         self.kindn_ = list_mobs
+        for i in range(len(self.kindn_)):
+            if self.kindn_[i] != '':
+                self.kindn_[i] = [self.kindn_[i].name, self.kindn_[i].count]
         self.kindness = []
         self.y_ = 0
         if self.flag_good:
@@ -290,8 +289,17 @@ class Motion:
             self.x_ = 14
         self.mob_pos = []
 
+        while True:
+            self.kindn_.remove('')
+            if self.kindn_.count('') == 0:
+                break
+
+        # while list.count():
+        #     self.kindn_.pop('')
+        print(self.kindn_)
         for i in range(len(self.kindn_)):
             self.star_pos = [self.x_, self.y_]
+            print(self.kindn_[i][0], 'sas')
             if self.kindn_[i][0] == "Скелеты":
                 self.kindness.append(Skeletons(self.star_pos, self.kindn_[i][1]))
             elif self.kindn_[i][0] == "Копейщики":
@@ -407,6 +415,8 @@ class Motion:
                                     del m.kindness[n]
                                     if len(m.kindness) == 0:
                                         self.run = False
+                                    if len(mob.kindness) == 0:
+                                        self.run = False
                                     m.pos()
                                 self.motin += 1
                                 self.pos()
@@ -429,9 +439,12 @@ class Motion:
         for i in self.kindness:
             i.set_view(left, top, cell_size)
 
-    def declaration_of_victory(self, event):
+    def declaration_of_victory(self, event, turn_player_1, turn_player_2, status):
         self.final_gr.draw(win)
-        text_coin = self.font.render(f'Победа', 1, (180, 0, 0))
+        if status == turn_player_1:
+            text_coin = self.font.render(f'Победа', 1, (180, 0, 0))
+        elif status == turn_player_2:
+            text_coin = self.font.render(f'Победа!', 1, (0, 0, 255))
         win.blit(text_coin, (self.final.rect.x + 200, self.final.rect.y + 290))
         if event:
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -444,11 +457,11 @@ class Motion:
 
 
 class Main:
-    def __init__(self, W1, Z1):
+    def __init__(self, armi1, armi2, turn_player_1, turn_player_2, status):
         pygame.mixer.music.load(f'data/MUSIC/introduction_battle.mp3')
         pygame.mixer.music.play()
-        m1 = Motion(W1, True)
-        m2 = Motion(Z1, False)
+        m1 = Motion(armi1, True)
+        m2 = Motion(armi2, False)
         board = Board(15, 10)
         board.set_view(100, 130, 60)
         m1.set_view(100, 130, 60)
@@ -470,6 +483,7 @@ class Main:
                     if w:
                         mot = True
             self.running = m1.running_broadcast()
+            self.running = m2.running_broadcast()
             m1.render_field()
             m1.render()
             m2.render()
@@ -480,8 +494,13 @@ class Main:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running2 = False
-                self.running2 = m1.declaration_of_victory(event)
+                self.running2 = m1.declaration_of_victory(event, turn_player_1, turn_player_2, status)
             pygame.display.flip()
 
 
-m = Main([["Скелеты", 17], ["Конники", 35], ["Лучники", 35], ["Личи", 35]], [["Скелеты", 17], ["Личи", 100]])
+# m = Main([["Скелеты", 17], ["Конники", 35], ["Лучники", 35], ["Личи", 35]], [["Скелеты", 17], ["Личи", 100]])
+#
+# heroes.army
+# >>> [] а
+# элемент списка а[0]
+# a[0].name, a[0].count

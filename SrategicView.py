@@ -4,8 +4,9 @@ from CosherCity import *
 from random import choice, randint
 from Heroes import *
 import os
+from new_buttle import Main
 
-global gold_player_1, gold_player_2, turn_player_1, turn_player_2, hero_player_1, hero_player_2, status, month, week, day
+# global gold_player_1, gold_player_2, turn_player_1, turn_player_2, hero_player_1, hero_player_2, status, month, week, day
 
 
 # загрузка изображений
@@ -29,12 +30,16 @@ def load_image(name, direct=None, colorkey=None):
 #  Загрузить уровень
 def load_level(name):
     maps = os.listdir(path="maps")
+    print(name)
+    print(maps)
     if name + '_background.txt' in maps and name + '_image.png' in maps and name + '_primary.txt' in maps:
+        print('pre-fin')
         with open('maps/' + name + '_background.txt', 'r') as file:
             passive_objects = [line.strip() for line in file]
         with open('maps/' + name + '_primary.txt', 'r') as file1:
             active_objects = [list(i) for i in [line.strip() for line in file1]]
         background_image = load_image(name + '_image.png', 'load_level')
+        print('fin')
         return active_objects, passive_objects, background_image
 
 
@@ -184,11 +189,12 @@ def run_map(name):
                             if cities_list[c].x == self.hero.x and cities_list[c].y == self.hero.y:
                                 cities_list[c].entered_hero = hero
                                 if cities_list[c].city_type == 'cosher':
-                                    cities_list[c], gold_player_1, gold_player_2, status, turn_player_1, turn_player_2 = run_cosher_city(cities_list[c], screen, gold_player_1, gold_player_2, status, turn_player_1, turn_player_2)
+                                    cities_list[c], gold_player_1, gold_player_2, status, turn_player_1, turn_player_2 = run_cosher_city(cities_list[c], screen, gold_player_1, gold_player_2, status, turn_player_1, turn_player_2, week)
                                     break
                     elif hero_player_1.hero.x == hero_player_2.hero.x and hero_player_1.hero.y == hero_player_2.hero.y:
-                        print(
-                            'start battle here')  # --------------------------------------------------------------------батя и сын снова сцепились по пьяне
+                        print(hero_player_1.hero.army)
+                        print(hero_player_2.hero.army)
+                        m = Main(hero_player_1.hero.army,  hero_player_2.hero.army, turn_player_1, turn_player_2, status)
 
     # Настройки карты. Актив, пассив и фон
     active_objects, passive_objects, background_img = load_level(name)
@@ -199,6 +205,9 @@ def run_map(name):
     # Список в котором находятся города
     cities_list = []
 
+    global gold_player_1, gold_player_2, turn_player_1, turn_player_2, hero_player_1, hero_player_2, status, month, week, day
+
+
     # Добавление спрайтов на карту
     background = Background(background_img)  # Спрайт фонового изображения
     # Добавление интерактивных объектов в группу спрайтов
@@ -206,10 +215,9 @@ def run_map(name):
         for j in range(len(active_objects[0])):
             if active_objects[i][j] != '*' and active_objects[i][j] != 'q' and active_objects[i][j] != 'w':
                 if active_objects[i][j] == '2':
-                    cities_list.append(CosherCity(choice(cities_names), j, i, ['', '', '', '', ''], None))
+                    cities_list.append(CosherCity(choice(cities_names), j, i, ['', '', '', '', ''], None, 1))
                 active = Active(active_objects[i][j], j, i)
 
-    global gold_player_1, gold_player_2, turn_player_1, turn_player_2, hero_player_1, hero_player_2, status, month, week, day
 
     # Список с существующими героями, чтобы задавать их
     heroes = [Orrin(0, 0), Zuldan(0, 0), Gardon(0, 0)]
@@ -260,7 +268,7 @@ def run_map(name):
     gold_player_2 = 0  # Количество золота игрок 2
 
     # Месяц, неделя, день
-    month, week, day = 0, 0, 1
+    month, week, day = 0, 1, 1
 
     # Статус в данный момент
     status = turn_player_1
@@ -351,7 +359,7 @@ def run_map(name):
                                         cities_list[i].able_archer = 10
                                         cities_list[i].able_cavalryman = 4
 
-                                if week != 3:
+                                if week != 4:
                                     week += 1
                                 else:
                                     week = 0
@@ -363,5 +371,5 @@ def run_map(name):
                         for city in range(len(cities_list)):
                             if cities_list[city].x == coords[0] and cities_list[city].y == coords[1]:
                                 if cities_list[city].city_type == 'cosher':
-                                    cities_list[city], gold_player_1, gold_player_2, status, turn_player_1, turn_player_2 = run_cosher_city(cities_list[city], screen, gold_player_1, gold_player_2, status, turn_player_1, turn_player_2)
+                                    cities_list[city], gold_player_1, gold_player_2, status, turn_player_1, turn_player_2 = run_cosher_city(cities_list[city], screen, gold_player_1, gold_player_2, status, turn_player_1, turn_player_2, week)
 
