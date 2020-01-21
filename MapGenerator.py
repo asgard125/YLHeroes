@@ -261,7 +261,6 @@ class Board:
         step = 200 // 32
         for i in range(self.height):
             for j in range(self.width):
-                print(self.background_board[i][j].minimap_color)
                 pg.draw.rect(surf, self.background_board[i][j].minimap_color,
                              (left + step * j, top + step * i, step, step))
                 if self.primary_board[i][j] != '*':
