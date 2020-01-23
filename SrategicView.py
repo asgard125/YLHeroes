@@ -372,4 +372,3 @@ def run_map(name):
                             if cities_list[city].x == coords[0] and cities_list[city].y == coords[1]:
                                 if cities_list[city].city_type == 'cosher':
                                     cities_list[city], gold_player_1, gold_player_2, status, turn_player_1, turn_player_2 = run_cosher_city(cities_list[city], screen, gold_player_1, gold_player_2, status, turn_player_1, turn_player_2, week)
-

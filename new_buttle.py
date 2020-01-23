@@ -7,7 +7,11 @@ from UnitTypes import *
 pg.init()
 pygame.font.init()
 
+size = width_, height_ = 1200, 750
+win = pygame.display.set_mode(size)
+
 color = (255, 255, 255)
+
 
 def load_image(name, colorkey=None):
     fullname = os.path.join(f"data/UNIT_IMG_BITTLE", name)
@@ -74,7 +78,7 @@ class Board:
 
 
 class Mob(pygame.sprite.Sprite):
-    def __init__(self, starting_position, coin=10):
+    def __init__(self, starting_position,coin=10):
         super().__init__()
         self.font = pygame.font.SysFont(None, 30)
         self.coin = coin
@@ -158,6 +162,8 @@ class Mob(pygame.sprite.Sprite):
             self.overall_hp -= damage
             self.coin = math.ceil(self.overall_hp / self.hp)
             self.hp_now = self.overall_hp % self.hp
+            if self.coin == 0:
+                self.coin = 1
             return False
 
     def brunt(self):
@@ -415,7 +421,7 @@ class Motion:
                                     del m.kindness[n]
                                     if len(m.kindness) == 0:
                                         self.run = False
-                                    if len(mob.kindness) == 0:
+                                    if len(self.kindness) == 0:
                                         self.run = False
                                     m.pos()
                                 self.motin += 1
@@ -496,11 +502,3 @@ class Main:
                     self.running2 = False
                 self.running2 = m1.declaration_of_victory(event, turn_player_1, turn_player_2, status)
             pygame.display.flip()
-
-
-# m = Main([["Скелеты", 17], ["Конники", 35], ["Лучники", 35], ["Личи", 35]], [["Скелеты", 17], ["Личи", 100]])
-#
-# heroes.army
-# >>> [] а
-# элемент списка а[0]
-# a[0].name, a[0].count

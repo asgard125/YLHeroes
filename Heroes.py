@@ -65,7 +65,3 @@ class Gardon(Hero):
               load_sprite('data\HEROES_ICONS\Hero_icon_gardon_city'),
               load_sprite('data\HEROES_APPEARANCE\Knight_icon', 1),
               1, 4, [SpearMan(18), Archer(4), '', '', ''], 890)
-
-
-
-
